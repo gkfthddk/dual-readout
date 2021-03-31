@@ -17,7 +17,7 @@ After fetching the repository, do (modify setuos.sh or use setenv*.sh at your sy
 particle gun macro script (modify rungun.sh and add *.mac at build/bin at your setting)
 DRsim and Reco to test_0.root
 
-    source rungun.sh run_ele.mac 0  0 test
+    source rungun.sh run_ele.mac 0 0 test
     
 Condor with macro script, output files stored at box/, log at condor/
 
