@@ -1,6 +1,10 @@
 # dual-readout
 Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 
+    git clone git@github.com:gkfthddk/dual-readout.git
+    git pull origin 0022
+    git checkout 0022
+
 ## How-to
 ### Compile
 After fetching the repository, do (modify setuos.sh or use setenv*.sh at your system)
