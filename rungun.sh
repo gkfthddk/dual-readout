@@ -1,12 +1,17 @@
 #!/bin/bash
 CMND=$1
-BOX=0
+BOX=$3
 SEED=$(( $2 + $BOX ))
-filename=$3
+filename=$4
 WORKPLACE=${PWD}
 mkdir box
 date
 hostname
+#ls /pad
+#cd /pad/yulee/dream/build
+cd build
+echo "pwd"
+pwd
 export LD_LIBRARY_PATH=${PWD}/lib$LD_LIBRARY_PATH
 cd DRsim
 echo "DRsim"

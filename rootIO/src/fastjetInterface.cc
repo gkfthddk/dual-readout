@@ -38,8 +38,7 @@ fastjetInterface::fastjetData::fastjetData(fastjet::PseudoJet& jet) {
   hasAssociatedCS = jet.has_associated_cs();
   validCS = jet.has_valid_cs();
   hasConstituents = jet.has_constituents();
-  //constituents = jet.constituents();
-  //nConstituents = jet.constituents().size();
+  nConstituents = jet.constituents().size();
 
   fastjet::PseudoJet childPJ;
   hasChild = jet.has_child(childPJ);

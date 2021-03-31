@@ -9,8 +9,8 @@ request_memory = 15GB
 request_cpus = 1
 transfer_output_files = box
 Requirements = ( machine == "kcms10.sscc.uos" || OpSys=="LINUX" )
-output = condor/ele$(Process).out
-error = condor/ele$(Process).error
-Log = condor/ele$(Process).log
-Arguments = run_ele $(Process) 0 box/ele
+output = condor/ele_4en$(Process).out
+error = condor/ele_4en$(Process).error
+Log = condor/ele_4en$(Process).log
+Arguments = run_ele_4en $(Process) 0 box/ele_4en
 Queue 30
