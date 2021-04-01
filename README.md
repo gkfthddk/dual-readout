@@ -1,38 +1,40 @@
 # dual-readout
 Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 
+    git clone git@github.com:gkfthddk/dual-readout.git
+    cd dual-readout
+    git pull origin 0022
+    git checkout 0022
+
 ## How-to
 ### Compile
-After fetching the repository, do
+After fetching the repository, do (modify setuos.sh or use setenv*.sh at your system)
 
-    source setenv-cc7-gcc8.sh
+    source setuos.sh
     mkdir build
     cd build
     cmake3 ..
     make -j4
-
-### Install
-For a case that needs to install the package (e.g. `condor` requires file transfer), one can install the package via
-
-    cmake -DCMAKE_INSTALL_PREFIX=<path_to_install_directory> ..
-    make -j4
-    make install
-    
-Note that to use the installed binary & library files, need to do following (assuming `$PWD=<path_to_install_directory>`)
-
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMC_DIR/lib64:$FASTJET_DIR/lib:$PYTHIA_DIR/lib:$PWD/lib
-
-### Running Pythia8
-In build/Gen,
-
-    ./P8ptcgun ptcgun.cmnd <seed> <filename>
-
-generates `<filename>_<seed>.root`.
+    cd ..
+    source aftermake.sh # copy librootIO to lib/ and set ddhep environment
 
 ### Running GEANT4
+particle gun macro script (modify rungun.sh and add *.mac at build/bin at your setting)
+DRsim and Reco to test_0.root
+
+    source rungun.sh run_ele 0 0 test
+    
+Condor with macro script, output files stored at box/, log at condor/
+
+    mkdir box
+    mkdir condor
+    condor_submit runel.co
+
+
 #### 1. GEANT4 standalone particle gun
 In build/DRsim,
 
+    cd build/bin
     ./DRsim <run_macro> <filenumber> <filename>
 
 generates, `<filename>_<filenumber>.root`
@@ -45,12 +47,5 @@ This requires the ROOT file generated from `Gen`. Assuming the name of the file 
 ### Reconstruction
 This requires the ROOT file generated from `DRsim`. Assuming the name of the file `<filename>_<filenumber>.root`, in build/Reco,
 
+    cd build/bin
     ./Reco <filenumber> <filename>
-
-### Analysis
-This requires the ROOT file generated from `Reco`. Assuming the name of the file `<filename>_<filenumber>.root`, in build/analysis,
-
-    ./<your_analysis_program> <filenumber> <filename>
-
-### Precaution
-Since GEANT4 takes very large amount of time per an event, P8ptcgun, DRsim and Reco are assumed to run a few events only per ROOT file. The executables can be run on parallel using `torque` or `condor`, and can be merged before analysis step using `hadd` from ROOT.
