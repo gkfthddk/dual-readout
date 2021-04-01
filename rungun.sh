@@ -16,7 +16,6 @@ export LD_LIBRARY_PATH=${PWD}/lib$LD_LIBRARY_PATH
 cd bin
 echo "DRsim"
 ./DRsim ${CMND}.mac ${SEED} ${WORKPLACE}/${filename}
-cd ../Reco
 echo "Reco"
 ./Reco ${SEED} ${WORKPLACE}/${filename}
 cd ${WORKPLACE}
