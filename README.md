@@ -8,7 +8,7 @@ After fetching the repository, do
     source setenv-cc7-gcc8.sh
     mkdir build
     cd build
-    cmake ..
+    cmake3 ..
     make -j4
 
 ### Install
