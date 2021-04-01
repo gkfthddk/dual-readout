@@ -12,7 +12,7 @@ After fetching the repository, do (modify setuos.sh or use setenv*.sh at your sy
     source setuos.sh
     mkdir build
     cd build
-    cmake ..
+    cmake3 ..
     make -j4
     cd ..
     source aftermake.sh # copy librootIO to lib/ and set ddhep environment
