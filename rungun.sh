@@ -13,7 +13,7 @@ cd build
 echo "pwd"
 pwd
 export LD_LIBRARY_PATH=${PWD}/lib$LD_LIBRARY_PATH
-cd DRsim
+cd bin
 echo "DRsim"
 ./DRsim ${CMND}.mac ${SEED} ${WORKPLACE}/${filename}
 cd ../Reco
