@@ -8,6 +8,7 @@ Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 ## How-to
 ### Compile
 After fetching the repository, do (modify setuos.sh or use setenv*.sh at your system)
+aftermake.sh copies librootIO to lib/ and set ddhep environment
 
     source setuos.sh
     mkdir build
@@ -15,7 +16,7 @@ After fetching the repository, do (modify setuos.sh or use setenv*.sh at your sy
     cmake3 ..
     make -j4
     cd ..
-    source aftermake.sh # copy librootIO to lib/ and set ddhep environment
+    source aftermake.sh
 
 ### Running GEANT4
 particle gun macro script (modify rungun.sh and add *.mac at build/bin at your setting)
