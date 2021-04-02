@@ -18,7 +18,7 @@ using namespace Pythia8;
 int main(int argc, char* argv[]) {
 
   // Check that correct number of command-line arguments
-  if (argc != 4) {
+  if (argc != 4 && argc !=5) {
     cerr << " Unexpected number of command-line arguments. \n You are"
          << " expected to provide one input and one output file name. \n"
          << " Program stopped! " << endl;
@@ -61,12 +61,14 @@ int main(int argc, char* argv[]) {
   bool colSinglet  = pythia.flag("Main:spareFlag2");
   double theta     = pythia.parm("Main:spareParm2");
   double scale     = pythia.parm("Main:spareParm3");
+  double eeGun2     = eeGun;
+  if(argc == 5)eeGun2  = atof(argv[4]);
 
   // Initialization.
   pythia.init();
 
   fjInterface.init(rootOutput.m_tree,"GenJets");
-  P8ptcgun ptcgun(idGun, eeGun, theta, 0.);
+  P8ptcgun ptcgun(idGun, eeGun, eeGun2, theta, 0.,atoi(argv[2]));
 
   // FastJet
   std::vector<fastjet::PseudoJet> fjInputs;
