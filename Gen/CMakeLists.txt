@@ -42,6 +42,8 @@ set(
   ptcgun.cmnd
   generic.cmnd
 )
+file(GLOB Gen_COMMANDS ${PROJECT_SOURCE_DIR}/*.cmnd)
+file(COPY ${Gen_COMMANDS} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 foreach(_script ${P8_SCRIPTS})
   configure_file(

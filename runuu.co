@@ -1,0 +1,16 @@
+Universe = vanilla
+getenv = True
+Executable = rungen.sh
+#initialdir = /pad/yulee/dream/build
+should_transfer_files=yes
+transfer_input_files = build
+when_to_transfer_output= ON_EXIT
+request_memory = 15GB
+request_cpus = 2
+transfer_output_files = box
+Requirements = ( machine == "kcms10.sscc.uos" || OpSys=="LINUX" )
+output = condor/uu$(Process).out
+error = condor/uu$(Process).error
+Log = condor/uu$(Process).log
+Arguments = uugun $(Process) 0 box/uu 70
+Queue 100
