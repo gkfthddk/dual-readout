@@ -25,7 +25,18 @@ int main(int , char* argv[]) {
   RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(filename+"_"+filenum+".root");
   drInterface->set("DRsim","DRsimEventData");
 
-  new GeoSvc({"./bin/compact/DRcalo.xml"});
+  //new GeoSvc({"./bin/compact/DRcalo.xml"});
+  std::ifstream compacts("compacts.txt");
+  if (!compacts) throw std::runtime_error("Cannot find compacts.txt!");
+  std::string xmlFile = "";
+  std::vector<std::string> xmlList = {};
+
+  while (std::getline(compacts,xmlFile)) {
+    if (xmlFile.size()>0) xmlList.push_back(xmlFile);
+  }
+
+  // Mandatory user initialization classes
+  new GeoSvc(xmlList);
 
   RecoTower* recoTower = new RecoTower();
   recoTower->readCSV();
