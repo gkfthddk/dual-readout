@@ -30,6 +30,10 @@ Condor with macro script, output files stored at box/, log at condor/
     mkdir condor
     condor_submit runel.co
 
+uu quark jet generation 50-70 GeV
+
+    source rungen.sh uugun 0 0 test 70
+
 
 #### 1. GEANT4 standalone particle gun
 In build/DRsim,
