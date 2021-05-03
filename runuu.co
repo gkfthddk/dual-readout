@@ -13,4 +13,4 @@ output = condor/uu$(Process).out
 error = condor/uu$(Process).error
 Log = condor/uu$(Process).log
 Arguments = uugun $(Process) 0 box/uu 70
-Queue 100
+Queue 10

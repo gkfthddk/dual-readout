@@ -1,6 +1,6 @@
 Universe = vanilla
 getenv = True
-Executable = rungun.sh
+Executable = runen.sh
 #initialdir = /pad/yulee/dream/build
 should_transfer_files=yes
 transfer_input_files = build
@@ -9,8 +9,8 @@ request_memory = 15GB
 request_cpus = 1
 transfer_output_files = box
 Requirements = ( machine == "kcms10.sscc.uos" || OpSys=="LINUX" )
-output = condor/ele$(Process).out
-error = condor/ele$(Process).error
-Log = condor/ele$(Process).log
-Arguments = run_ele $(Process) 0 box/ele
-Queue 10
+output = condor/pi0_en$(Process).out
+error = condor/pi0_en$(Process).error
+Log = condor/pi0_en$(Process).log
+Arguments = run_en $(Process) 0 box/pi0_en pi0
+Queue 100

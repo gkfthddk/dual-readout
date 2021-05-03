@@ -13,4 +13,4 @@ output = condor/ele_en$(Process).out
 error = condor/ele_en$(Process).error
 Log = condor/ele_en$(Process).log
 Arguments = run_en $(Process) 0 box/ele_en e-
-Queue 10
+Queue 100

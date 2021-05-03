@@ -1,6 +1,6 @@
 #include "DRsimInterface.h"
 #include "RootInterface.h"
-#include "fastjetInterface.h"
+//#include "fastjetInterface.h"
 #include "RecoTower.h"
 
 #include "GeoSvc.h"
@@ -15,12 +15,12 @@ int main(int , char* argv[]) {
   RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>(filename+"_"+filenum+".root");
   recoInterface->create("Reco","RecoEventData");
 
-  fastjetInterface fjFiber_S;
+  /*fastjetInterface fjFiber_S;
   fjFiber_S.init(recoInterface->getTree(),"RecoFiberJets_S");
   fastjetInterface fjFiber_Scorr;
   fjFiber_Scorr.init(recoInterface->getTree(),"RecoFiberJets_Scorr");
   fastjetInterface fjFiber_C;
-  fjFiber_C.init(recoInterface->getTree(),"RecoFiberJets_C");
+  fjFiber_C.init(recoInterface->getTree(),"RecoFiberJets_C");*/
 
   RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(filename+"_"+filenum+".root");
   drInterface->set("DRsim","DRsimEventData");
@@ -42,6 +42,7 @@ int main(int , char* argv[]) {
   recoTower->readCSV();
 
   unsigned int entries = drInterface->entries();
+  int count=0;
   while (drInterface->numEvt() < entries) {
     recoTower->getFiber()->clear();
 
@@ -50,6 +51,7 @@ int main(int , char* argv[]) {
     drInterface->read(evt);
 
     for (auto towerItr = evt.towers.begin(); towerItr != evt.towers.end(); ++towerItr) {
+      printf("tower %d\n",count);
       auto tower = *towerItr;
       recoTower->reconstruct(tower,*recoEvt);
 
@@ -63,12 +65,13 @@ int main(int , char* argv[]) {
     recoEvt->E_DR = RecoTower::E_DR(recoEvt->E_C,recoEvt->E_S);
     recoEvt->E_DRcorr = RecoTower::E_DR(recoEvt->E_C,recoEvt->E_Scorr);
 
-    fjFiber_S.runFastjet(recoTower->getFiber()->getFjInputs_S());
+    /*fjFiber_S.runFastjet(recoTower->getFiber()->getFjInputs_S());
     fjFiber_Scorr.runFastjet(recoTower->getFiber()->getFjInputs_Scorr());
-    fjFiber_C.runFastjet(recoTower->getFiber()->getFjInputs_C());
+    fjFiber_C.runFastjet(recoTower->getFiber()->getFjInputs_C());*/
 
     recoInterface->fill(recoEvt);
     delete recoEvt;
+    count+=1;
 
   } // event loop
 

@@ -62,6 +62,7 @@ void RecoTower::reconstruct(const DRsimInterface::DRsimTowerData& tower, RecoInt
 
   for (auto sipmItr = tower.SiPMs.begin(); sipmItr != tower.SiPMs.end(); ++sipmItr) {
     auto sipm = *sipmItr;
+    printf("sipm\n");
 
     fFiber->reconstruct(sipm,recoTower);
 
