@@ -1,42 +1,14 @@
 # dual-readout
 Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 
-    git clone git@github.com:gkfthddk/dual-readout.git
-    cd dual-readout
-    git pull origin 0022
-    git checkout 0022
-
 ## How-to
 ### Compile
-After fetching the repository, do (modify setuos.sh or use setenv*.sh at your system)
+After fetching the repository, do
 
-<<<<<<< HEAD
-    source setuos.sh
-    mkdir build
-    cd build
-    cmake3 ..
-=======
     source setenv-cc7-gcc8.sh
     cmake3 .
->>>>>>> parent of 1a4e581... 0.0.2.2 update
     make -j4
-    cd ..
-    source aftermake.sh # copy librootIO to lib/ and set ddhep environment
 
-<<<<<<< HEAD
-### Running GEANT4
-particle gun macro script (modify rungun.sh and add *.mac at build/bin at your setting)
-DRsim and Reco to test_0.root
-
-    source rungun.sh run_ele 0 0 test
-    
-Condor with macro script, output files stored at box/, log at condor/
-
-    mkdir box
-    mkdir condor
-    condor_submit runel.co
-
-=======
 There are compiled executables in bin/
 Copy executable file in bin to each directory.
 
@@ -46,18 +18,13 @@ Copy executable file in bin to each directory.
     cp bin/process analysis/
     
 When you change code `make` again and update executable from `/bin` directory.
->>>>>>> parent of 1a4e581... 0.0.2.2 update
 
+### Running GEANT4
 #### 1. GEANT4 standalone particle gun
 In DRsim,
 
-<<<<<<< HEAD
-    cd build/bin
-    ./DRsim <run_macro> <filenumber> <filename>
-=======
     #./DRsim <run_macro> <filenumber> <filename>
     ./DRsim run_ele.mac 0 ../eltest
->>>>>>> parent of 1a4e581... 0.0.2.2 update
 
 generates, `<filename>_<filenumber>.root`
 I you mind `lib/librootIO_rdict.pcm file does not exist`, copy `rootIO/librootIO_rdict.pcm` to `lib`
@@ -72,10 +39,6 @@ Modify `#.mac` for other paticles or conditions
 ### Reconstruction
 This requires the ROOT file generated from `DRsim`. Assuming the name of the file `<filename>_<filenumber>.root`, in build/Reco,
 
-<<<<<<< HEAD
-    cd build/bin
-    ./Reco <filenumber> <filename>
-=======
     #./Reco <filenumber> <filename>
     ./Reco 0 ../eltest
 
@@ -127,5 +90,3 @@ images have 168 * 168 shape, but imaging algorithm is still in progress.
 
 ### Precaution
 Since GEANT4 takes very large amount of time per an event, P8ptcgun, DRsim and Reco are assumed to run a few events only per ROOT file. The executables can be run on parallel using `torque` or `condor`, and can be merged before analysis step using `hadd` from ROOT.
-
->>>>>>> parent of 1a4e581... 0.0.2.2 update
