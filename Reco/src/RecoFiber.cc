@@ -24,14 +24,14 @@ void RecoFiber::reconstruct(const DRsimInterface::DRsimSiPMData& sipm, RecoInter
     recoFiber.E = (float)recoFiber.n / fCalibC;
     recoFiber.Ecorr = recoFiber.E;
     recoFiber.t = setTmax(sipm);
-    addFjInputs(recoFiber);
+    //addFjInputs(recoFiber);
   } else {
     recoFiber.E = (float)recoFiber.n / fCalibS;
     recoFiber.t = setTmax(sipm);
 
     recoFiber.depth = setDepth(recoFiber.t,recoTower);
     recoFiber.Ecorr = recoFiber.E*std::exp((-recoFiber.depth+fDepthEM)/fAbsLen);
-    addFjInputs(recoFiber);
+    //addFjInputs(recoFiber);
   }
 
   fData = recoFiber;
@@ -66,7 +66,7 @@ int RecoFiber::cutXtalk(const DRsimInterface::DRsimSiPMData& sipm) {
 
   return sum;
 }
-
+/*
 void RecoFiber::addFjInputs(const RecoInterface::RecoFiberData& recoFiber) {
   auto global = fSeg->position(recoFiber.fiberNum);
   TVector3 vec(global.x(),global.y(),global.z());
@@ -86,4 +86,4 @@ void RecoFiber::clear() {
   fFjInputs_S.clear();
   fFjInputs_Scorr.clear();
   fFjInputs_C.clear();
-}
+}*/

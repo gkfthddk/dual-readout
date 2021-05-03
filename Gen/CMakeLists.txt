@@ -1,14 +1,10 @@
 project(P8ptcgen)
 
-find_package(Pythia8 REQUIRED)
-find_package(HepMC3 REQUIRED)
-find_package(FastJet REQUIRED)
-
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${PYTHIA8_INCLUDE_DIR}
-  ${HEPMC3_INCLUDE_DIR}
-  ${FASTJET_INCLUDE_DIR}
+  ${PYTHIA_DIR}/include
+  ${HEPMC_DIR}/include
+  ${FASTJET_DIR}/include
 )
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
@@ -20,9 +16,10 @@ file(GLOB headers
 add_executable(P8ptcgen P8ptcgen.cc ${sources} ${headers})
 target_link_libraries(
   P8ptcgen
-  ${PYTHIA8_LIBRARIES}
-  ${HEPMC3_LIBRARIES}
-  ${FASTJET_LIBRARY}
+  ${PYTHIA_DIR}/lib/libpythia8.a
+  ${HEPMC_DIR}/lib64/libHepMC3.so
+  ${HEPMC_DIR}/lib64/libHepMC3rootIO.so
+  ${FASTJET_DIR}/lib/libfastjet.so
   rootIO
   ${CMAKE_DL_LIBS}
 )
@@ -30,9 +27,10 @@ target_link_libraries(
 add_executable(P8generic P8generic.cc ${sources} ${headers})
 target_link_libraries(
   P8generic
-  ${PYTHIA8_LIBRARIES}
-  ${HEPMC3_LIBRARIES}
-  ${FASTJET_LIBRARY}
+  ${PYTHIA_DIR}/lib/libpythia8.a
+  ${HEPMC_DIR}/lib64/libHepMC3.so
+  ${HEPMC_DIR}/lib64/libHepMC3rootIO.so
+  ${FASTJET_DIR}/lib/libfastjet.so
   rootIO
   ${CMAKE_DL_LIBS}
 )

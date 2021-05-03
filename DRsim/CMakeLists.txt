@@ -2,8 +2,6 @@
 # Setup the project
 project(DRsim)
 
-find_package(HepMC3)
-
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -27,8 +25,7 @@ include(${Geant4_USE_FILE})
 # NB: headers are included so they will show up in IDEs
 #
 include_directories(
-  ${HEPMC3_INCLUDE_DIR}
-  ${HEPMC3_INTERFACES_DIR}
+  ${HEPMC_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${Geant4_INCLUDE_DIR}
 )
@@ -41,8 +38,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 add_executable(DRsim DRsim.cc ${sources} ${headers})
 target_link_libraries(
   DRsim ${Geant4_LIBRARIES}
-  ${HEPMC3_LIBRARIES}
-  ${HEPMC3_ROOTIO_LIB}
+  ${HEPMC_DIR}/lib64/libHepMC3.so
+  ${HEPMC_DIR}/lib64/libHepMC3rootIO.so
   rootIO
   DetComponents
   ddDRcalo

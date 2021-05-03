@@ -3,7 +3,7 @@
 
 #include "RecoInterface.h"
 #include "DRsimInterface.h"
-#include "fastjet/PseudoJet.hh"
+//#include "fastjet/PseudoJet.hh"
 
 #include "GeoSvc.h"
 #include "GridDRcalo.h"
@@ -18,9 +18,9 @@ public:
 
   void setCalibS(float calibS) { fCalibS = calibS; }
   void setCalibC(float calibC) { fCalibC = calibC; }
-  const std::vector<fastjet::PseudoJet>& getFjInputs_S() { return fFjInputs_S; }
-  const std::vector<fastjet::PseudoJet>& getFjInputs_Scorr() { return fFjInputs_Scorr; }
-  const std::vector<fastjet::PseudoJet>& getFjInputs_C() { return fFjInputs_C; }
+  //const std::vector<fastjet::PseudoJet>& getFjInputs_S() { return fFjInputs_S; }
+  //const std::vector<fastjet::PseudoJet>& getFjInputs_Scorr() { return fFjInputs_Scorr; }
+  //const std::vector<fastjet::PseudoJet>& getFjInputs_C() { return fFjInputs_C; }
   void addFjInputs(const RecoInterface::RecoFiberData& recoFiber);
   void clear();
 
@@ -34,9 +34,9 @@ private:
   dd4hep::DDSegmentation::GridDRcalo* fSeg;
   
   RecoInterface::RecoFiberData fData;
-  std::vector<fastjet::PseudoJet> fFjInputs_S;
-  std::vector<fastjet::PseudoJet> fFjInputs_Scorr;
-  std::vector<fastjet::PseudoJet> fFjInputs_C;
+  //std::vector<fastjet::PseudoJet> fFjInputs_S;
+  //std::vector<fastjet::PseudoJet> fFjInputs_Scorr;
+  //std::vector<fastjet::PseudoJet> fFjInputs_C;
 
   float fCalibS;
   float fCalibC;

@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 cmake_policy(SET CMP0074 NEW)
 project(dual-readout)
 
-set(CMAKE_MODULE_PATH
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 IF(NOT TARGET DD4hep::DDCore)
   find_package ( DD4hep REQUIRED )
   include ( ${DD4hep_DIR}/cmake/DD4hep.cmake )

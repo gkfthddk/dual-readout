@@ -33,7 +33,6 @@ namespace ddDRcalo {
 
     auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>( sensDet.readout().segmentation().segmentation() );
     segmentation->setGridSize( x_dim.distance() );
-    segmentation->setSipmSize( x_dim.dx() );
 
     auto paramBarrel = segmentation->paramBarrel();
     paramBarrel->SetInnerX(x_barrel.rmin());

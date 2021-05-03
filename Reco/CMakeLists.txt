@@ -1,10 +1,8 @@
 project(Reco)
 
-find_package(FastJet)
-
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${FASTJET_INCLUDE_DIR}
+  ${FASTJET_DIR}/include
 )
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
@@ -16,7 +14,7 @@ file(GLOB headers
 add_executable(Reco Reco.cc ${sources} ${headers})
 target_link_libraries(
   Reco
-  ${FASTJET_LIBRARY}
+  ${FASTJET_DIR}/lib/libfastjet.so
   rootIO
   ${CMAKE_DL_LIBS}
   DetComponents

@@ -1,16 +1,15 @@
 Universe = vanilla
 getenv = True
 Executable = rungun.sh
-#initialdir = /pad/yulee/dream/build
 should_transfer_files=yes
 transfer_input_files = build
 when_to_transfer_output= ON_EXIT
 request_memory = 15GB
 request_cpus = 1
 transfer_output_files = box
-Requirements = ( machine == "kcms10.sscc.uos" || OpSys=="LINUX" )
-output = condor/ele$(Process).out
-error = condor/ele$(Process).error
-Log = condor/ele$(Process).log
-Arguments = run_ele $(Process) 0 box/ele
-Queue 30
+Requirements = ( machine == "kcms10.sscc.uos"  || OpSys=="LINUX" )
+output = log/ele$(Process).out
+error = log/ele$(Process).error
+Log = log/ele$(Process).log
+Arguments = run_ele $(Process) box/ele #change run_ele to other macro and box/ele to proper file name
+Queue 10 #number of jobs

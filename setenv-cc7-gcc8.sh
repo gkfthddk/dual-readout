@@ -17,3 +17,4 @@ export PYTHIA_DIR=/cvmfs/sft.cern.ch/lcg/releases/LCG_97a_FCC_1/MCGenerators/pyt
 export PYTHIA8=/cvmfs/sft.cern.ch/lcg/releases/LCG_97a_FCC_1/MCGenerators/pythia8/244/x86_64-centos7-gcc8-opt
 export PYTHIA8DATA=/cvmfs/sft.cern.ch/lcg/releases/LCG_97a_FCC_1/MCGenerators/pythia8/244/x86_64-centos7-gcc8-opt/share/Pythia8/xmldoc
 export ROOT_INCLUDE_PATH=$HEPMC_DIR/include:$ROOT_INCLUDE_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMC_DIR/lib64:$FASTJET_DIR/lib:$PYTHIA_DIR/lib:$PWD/lib
