@@ -17,7 +17,8 @@ file(GLOB headers
 
 include(${ROOT_USE_FILE})
 add_executable(analysis analysis.cc ${sources} ${headers})
-#add_executable(JER JER.cc ${sources} ${headers})
+add_executable(JER JER.cc ${sources} ${headers})
+add_executable(process process.cc ${sources} ${headers})
 #add_executable(calib calib.cc ${sources} ${headers})
 target_link_libraries(
   analysis
@@ -28,14 +29,13 @@ target_link_libraries(
   DetComponents
   ddDRsegmentation
 )
-#target_link_libraries(
-#  JER
-#  ${HEPMC_DIR}/lib64/libHepMC3.so
-#  ${HEPMC_DIR}/lib64/libHepMC3rootIO.so
-#  rootIO
-#  ${ROOT_LIBRARIES}
-#  ${CMAKE_DL_LIBS}
-#)
+target_link_libraries(
+  JER
+  ${HEPMC3_LIBRARIES}
+  rootIO
+  ${ROOT_LIBRARIES}
+  ${CMAKE_DL_LIBS}
+)
 #target_link_libraries(
 #  calib
 #  ${HEPMC_DIR}/lib64/libHepMC3.so
@@ -44,6 +44,17 @@ target_link_libraries(
 #  ${ROOT_LIBRARIES}
 #  ${CMAKE_DL_LIBS}
 #)
+target_link_libraries(
+  process
+  ${HEPMC_DIR}/lib64/libHepMC3.so
+  ${HEPMC_DIR}/lib64/libHepMC3rootIO.so
+  rootIO
+  ${ROOT_LIBRARIES}
+  ${CMAKE_DL_LIBS}
+  DetComponents
+  ddDRsegmentation
+  stdc++fs
+)
 
 set(
   analysis_SCRIPTS
@@ -57,4 +68,4 @@ foreach(_script ${analysis_SCRIPTS})
   )
 endforeach()
 
-install(TARGETS analysis DESTINATION bin) # JER calib
+install(TARGETS analysis JER process DESTINATION bin) # JER calib
