@@ -1,0 +1,15 @@
+Universe = vanilla
+getenv = True
+should_transfer_files=yes
+when_to_transfer_output= ON_EXIT
+request_memory = 15GB
+request_cpus = 2
+Requirements = ( machine == "kcms10.sscc.uos" || machine !="cms.sscc.uos.ac.kr")
+transfer_input_files = build
+Executable = runen.sh
+transfer_output_files = box
+output = condor/ele_$(Process).out
+error = condor/ele_$(Process).error
+Log = condor/ele_$(Process).log
+Arguments = run_en $(Process) 0 box/ele e- 20 100
+Queue 10

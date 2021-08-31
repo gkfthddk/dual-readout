@@ -5,6 +5,7 @@ cd build
 mkdir box
 cp ../DRsim/run_ele.mac DRsim/
 cp ../DRsim/run_pi.mac DRsim/
+cp ../DRsim/run_en.mac DRsim/
 cmake ..
 make -j8
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMC_DIR/lib64:$FASTJET_DIR/lib:$PYTHIA_DIR/lib:$PWD/lib
