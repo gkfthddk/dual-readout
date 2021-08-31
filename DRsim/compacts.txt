@@ -1,1 +1,1 @@
-./compact/DRcalo.xml
+./bin/compact/DRcalo.xml
