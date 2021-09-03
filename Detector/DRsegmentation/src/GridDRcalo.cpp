@@ -47,6 +47,12 @@ GridDRcalo::~GridDRcalo() {
   if (fParamEndcap) delete fParamEndcap;
 }
 
+Vector3D GridDRcalo::towerposition(int noEta, int noPhi) const {
+  DRparamBase* paramBase = setParamBase(noEta);
+
+  return paramBase->GetTowerPos(noPhi);
+}
+
 Vector3D GridDRcalo::position(const CellID& cID) const {
   int noEta = numEta(cID);
   int noPhi = numPhi(cID);

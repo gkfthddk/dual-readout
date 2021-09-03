@@ -14,8 +14,10 @@ cp rootIO/{librootIO_rdict.pcm,librootIO.rootmap} lib/
 cp -r ../Detector/DRcalo/compact bin/
 mkdir -p DRsim/bin
 mkdir -p Reco/bin
+mkdir -p analysis/bin
 cp -r ../Detector/DRcalo/compact Reco/bin/
 cp -r ../Detector/DRcalo/compact DRsim/bin/
+cp -r ../Detector/DRcalo/compact analysis/bin/
 
 cp bin/DRsim DRsim/
 cp bin/Reco Reco/
