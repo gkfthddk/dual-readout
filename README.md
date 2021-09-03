@@ -1,7 +1,7 @@
 # dual-readout
 Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 
-    git checkout -t origin/0023
+    git checkout -t origin/0023_img
 
 ## How-to
 ### Compile
@@ -13,7 +13,7 @@ After fetching the repository, do
 ### Install
 For a case that needs to install the package (e.g. `condor` requires file transfer), one can install the package via
 
-    source build
+    source build.sh
     
 
 ### Running GEANT4
@@ -30,9 +30,10 @@ This requires the ROOT file generated from `DRsim`. Assuming the name of the fil
     ./Reco <filenumber> <filename>
 
 ### Analysis
-This requires the ROOT file generated from `Reco`. Assuming the name of the file `<filename>_<filenumber>.root`, in build/analysis,
+This requires the ROOT file generated from `Reco`. Assuming the name of the file `<filename>_0.root ~ <filename>_9.root`, in build/analysis, out.root will be created.
 
-    ./<your_analysis_program> <filenumber> <filename>
+    ./process <filename>_%d.root 0 9 <out> 0 0
+  
 
 source runen.sh run_en 0 0 box/ele e- 20 100
 
