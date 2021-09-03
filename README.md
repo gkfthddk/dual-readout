@@ -13,7 +13,7 @@ After fetching the repository, do
 ### Install
 For a case that needs to install the package (e.g. `condor` requires file transfer), one can install the package via
 
-    source build
+    source build.sh
     
 
 ### Running GEANT4
