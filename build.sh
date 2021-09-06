@@ -21,5 +21,6 @@ cp -r ../Detector/DRcalo/compact analysis/bin/
 
 cp bin/DRsim DRsim/
 cp bin/Reco Reco/
+cp bin/process analysis/
 
 #./DRsim run_ele.mac 0 testel
