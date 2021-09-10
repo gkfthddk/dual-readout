@@ -18,6 +18,7 @@ public:
   virtual ~GridDRcalo() override;
 
   //  Determine the global(local) position based on the cell ID.
+  virtual Vector3D towerposition(int noEta, int noPhi) const;
   virtual Vector3D position(const CellID& aCellID) const;
   Vector3D localPosition(const CellID& aCellID) const;
   Vector3D localPosition(int numx, int numy, int x_, int y_) const;

@@ -40,3 +40,9 @@ source runen.sh run_en 0 0 box/ele e- 20 100
 condor_submit run_ele.co
 
 version 0.0.2.3
+
+### Saving image
+This requires the ROOT file generated from `process`. Edit `tonpz.py` variables `name_file,name_cls,save_path` with your file name and path.
+The script is based on python3, you would run at clean environment (open another terminal session do not source simulation environment).
+
+     python3 tonpz.py
