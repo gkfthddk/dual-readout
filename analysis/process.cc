@@ -104,8 +104,8 @@ TFile outfile(outname.Data(), "recreate");
   std::vector<Float_t> tower_eta;
   std::vector<Float_t> tower_theta;
   std::vector<Float_t> tower_phi;
-  std::vector<Float_t> tower_notheta;
-  std::vector<Float_t> tower_nophi;
+  std::vector<Int_t> tower_notheta;
+  std::vector<Int_t> tower_nophi;
   std::vector<Int_t> tower_diff_theta;
   std::vector<Int_t> tower_diff_phi;
   std::vector<Int_t> tower_numx;
@@ -352,7 +352,13 @@ TFile outfile(outname.Data(), "recreate");
   int voxindex=-1;
   int imgindex=-1;
   int buf_index=0;
+  int diff_phi=0;
+  int diff_theta=0;
+  int fibercount=0;
   bool isopposite = false;
+    int fibercheck=0;
+  Float_t buf_fiber_e[5];
+  Int_t buf_fiber_same=0;
 
   TVector3* fiberxyz = new TVector3();
   TVector3* towerxyz = new TVector3();
@@ -399,18 +405,19 @@ TFile outfile(outname.Data(), "recreate");
 
     while (recoInterface->numEvt() < entries) {
       
-    //printf("%d \n",int(count));
     //if(count%int(entries/10.)==0)printf("%d%%--\n",int(100.*count/entries));
+    count+=1;
+    fibercheck=0;
     DRsimInterface::DRsimEventData drEvt;
     RecoInterface::RecoEventData recoEvt;
     drInterface->read(drEvt);
     recoInterface->read(recoEvt);
-
     E_C=recoEvt.E_C;
     E_S=recoEvt.E_S;
     E_Scorr=recoEvt.E_Scorr;
     n_C=recoEvt.n_C;
     n_S=recoEvt.n_S;
+    if(E_DR==recoEvt.E_DR)printf("same energy %d\n",count);
     E_DR=recoEvt.E_DR;
     E_DRcorr=recoEvt.E_DRcorr;
     Eleak_nu=0;
@@ -431,7 +438,7 @@ TFile outfile(outname.Data(), "recreate");
     tower_n_s.clear();
     tower_n_c.clear();
 
-     for (auto leak : drEvt.leaks) {
+    for (auto leak : drEvt.leaks) {
       TLorentzVector leak4vec;
       leak4vec.SetPxPyPzE(leak.px,leak.py,leak.pz,leak.E);
       if ( std::abs(leak.pdgId)==12 || std::abs(leak.pdgId)==14 || std::abs(leak.pdgId)==16 ) {
@@ -439,12 +446,12 @@ TFile outfile(outname.Data(), "recreate");
       } else {
         Pleak += leak4vec.P();
       }
-      }
+    }
 
-    int fibercheck=0;
+    fibercheck=0;
     for ( int num_jet=0; num_jet<2; num_jet++){
       if(num_jet==1 && isjet==0) break;
-      int fibercount=0;
+      fibercount=0;
       fiber_energy.clear();
       fiber_ecor.clear();
       fiber_ecor_s.clear();
@@ -481,6 +488,7 @@ TFile outfile(outname.Data(), "recreate");
       FILL_ZEROI(image_n_c_,28224);
       FILL_ZERO(image_ecor_s_,28224);
       FILL_ZEROI(image_n_s_,28224);
+      buf_fiber_same=0;
       m00 = 0.;
       m01 = 0.;
       m11 = 0.;
@@ -662,8 +670,8 @@ TFile outfile(outname.Data(), "recreate");
           tower_phi.push_back(towerphi);
           tower_eta.push_back(towereta);
           tower_theta.push_back(towertheta);
-          int diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
-          int diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
+          diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
+          diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
           tower_diff_theta.push_back(diff_theta);
           tower_diff_phi.push_back(diff_phi);
           num_tower+=1;
@@ -762,8 +770,18 @@ TFile outfile(outname.Data(), "recreate");
       for (auto tower : recoEvt.towers) {
         //towerData.iTheta = segmentation->numEta(hit->GetSiPMnum());
         //towerData.iPhi = segmentation->numPhi(hit->GetSiPMnum());
-        int noTheta = tower.iTheta;
-        int noPhi = tower.iPhi;
+        int noTheta = int(tower.iTheta);
+        int noPhi = int(tower.iPhi);
+        if(abs(noTheta)>92 || noPhi<0 || noPhi>282){
+          printf("Error: outrange  ");
+          fibercheck=0;
+          break;
+        }
+        if(buf_fiber_same>=5){
+          printf("Error: repeated fiber ");
+          fibercheck=0;
+          break;
+        }
         auto towerpos = segmentation->towerposition(noTheta,noPhi);
         towerxyz->SetXYZ(towerpos.x(),towerpos.y(),towerpos.z());
         float towerphi=float(towerxyz->Phi());
@@ -796,19 +814,19 @@ TFile outfile(outname.Data(), "recreate");
         tower_theta.push_back(towertheta);
         tower_nophi.push_back(noPhi);
         tower_notheta.push_back(noTheta);
-        int diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
-        int diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
+        diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
+        diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
         if(isjet==1){
-          int diff_phi=int(22 +TMath::Nint((towerphi-towercenterphi)/0.022));
-          int diff_theta=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
+          diff_phi=int(22 +TMath::Nint((towerphi-towercenterphi)/0.022));
+          diff_theta=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
         }
         tower_diff_theta.push_back(diff_theta);
         tower_diff_phi.push_back(diff_phi);
         num_tower+=1;
         int checktower=0;
-        
-        
+        int fiberintowercount=0;
         for (auto fiber : tower.fibers) {
+        
           
             auto pos = segmentation->position(fiber.fiberNum);
             isopposite=false;
@@ -817,9 +835,14 @@ TFile outfile(outname.Data(), "recreate");
             z=float(pos.z());
             fiberxyz->SetXYZ(x,y,z);
             phi=float(fiberxyz->Phi());
+        if(num_jet==0&&fibercount<5){
+          if(buf_fiber_e[fibercount]==fiber.Ecorr)buf_fiber_same+=1;
+          buf_fiber_e[fibercount]=fiber.Ecorr;
+        }
+        fiberintowercount+=1;
             eta=float(fiberxyz->Eta());
             theta=float(fiberxyz->Theta());
-            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break; // ijset 할때 phi, no phi도 연동해야
+            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break; // ijset 할때 phi, nophi(phi index)도 연동해야
             if(isjet==1 && num_jet==1){
               if(abs(phi)>pi/2.){
                 isopposite=true;
@@ -984,7 +1007,6 @@ TFile outfile(outname.Data(), "recreate");
          printf("no fiber\n");
        }
      }
-     count+=1;
    }
     
     delete drInterface;
