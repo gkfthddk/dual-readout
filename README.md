@@ -32,7 +32,7 @@ This requires the ROOT file generated from `DRsim`. Assuming the name of the fil
 ### Analysis
 This requires the ROOT file generated from `Reco`. Assuming the name of the file `<filename>_0.root ~ <filename>_9.root`, in build/analysis, out.root will be created.
 
-    ./process <filename>_%d.root 0 9 <out> 0 0
+    ./process <filename>_%d.root 0 10 <out> 0 0
   
 
 source runen.sh run_en 0 0 box/ele e- 20 100
