@@ -1,18 +1,25 @@
 #This macro can not be executed standalone
 /DRsim/action/useGPS True
 
-/run/numberOfThreads 1
 /run/verbose 1
 /run/initialize
 
-/gps/particle pi+
-/gps/energy 20 GeV
-/gps/position 0 0 0 cm
 /gps/pos/type Plane
-/gps/pos/shape Circle
-/gps/pos/radius 1.0 cm
-/gps/ang/type beam1d
-/gps/ang/sigma_r 0.2 deg
-/gps/direction 0.999938285 0.0 0.0111098
+/gps/pos/shape Square
+/gps/pos/centre 0 -3.142 -4.7135 cm #option from original repo
+/gps/pos/halfx 10. mm # z length after rotation
+/gps/pos/halfy 10. mm
+/gps/pos/rot1 0 0 1 # xy plane
+/gps/pos/rot2 0 1 0
 
-/run/beamOn 2
+/gps/ang/type beam1d #beam2d
+/gps/ang/sigma_r 0.2 deg #
+
+#/DRsim/generator/theta -0.0372899
+#/DRsim/generator/phi 0.0174533
+/gps/ang/rot1 0.03727558 -0.000650648  -0.999304812 #same directio with theta phi case
+/gps/ang/rot2 0.017452414 -0.999847695  0
+
+/gps/ene/type Lin
+/gps/ene/intercept 1
+
