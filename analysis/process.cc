@@ -49,6 +49,7 @@ int main(int , char* argv[]){
   TFile* box;
   TList* keys;
   int readcount=0;
+  printf("file will be checked %d\n",num_file_end-num_file_begin);
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
     inname.Form(innameform.Data(),file_num);
     if(!fs::exists(inname.Data())){
@@ -78,20 +79,9 @@ int main(int , char* argv[]){
     keys->Clear();
     box->Close();
   }
-  new GeoSvc({"./bin/compact/DRcalo.xml"});
-
-  auto m_geoSvc = GeoSvc::GetInstance();
-  std::string m_readoutName = "DRcaloSiPMreadout";
-
-  auto lcdd = m_geoSvc->lcdd();
-  auto allReadouts = lcdd->readouts();
-  if (allReadouts.find(m_readoutName) == allReadouts.end()) {
-    throw std::runtime_error("Readout " + m_readoutName + " not found! Please check tool configuration.");
-  } else {
-    std::cout << "Reading EDM from the collection " << m_readoutName << std::endl;
-  }
-
-      auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
+  
+  
+  
   
   float pi=TMath::Pi();
   float x=0.;
@@ -359,13 +349,30 @@ TFile outfile(outname.Data(), "recreate");
     int fibercheck=0;
   Float_t buf_fiber_e[5];
   Int_t buf_fiber_same=0;
+  Int_t outrange=0;
+  Int_t repeatfiber=0;
+  Int_t nofiber=0;
 
   TVector3* fiberxyz = new TVector3();
   TVector3* towerxyz = new TVector3();
   TLorentzVector* ptc_pxyz = new TLorentzVector();
-
+  FILE *fp1;
   int count=0;
-  printf("file will be checked %d\n",num_file_end-num_file_begin);
+  new GeoSvc({"./bin/compact/DRcalo.xml"});
+
+  auto m_geoSvc = GeoSvc::GetInstance();
+  std::string m_readoutName = "DRcaloSiPMreadout";
+
+  auto lcdd = m_geoSvc->lcdd();
+  auto allReadouts = lcdd->readouts();
+  if (allReadouts.find(m_readoutName) == allReadouts.end()) {
+    throw std::runtime_error("Readout " + m_readoutName + " not found! Please check tool configuration.");
+  } else {
+    std::cout << "Reading EDM from the collection " << m_readoutName << std::endl;
+  }
+
+      auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
+  
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
     inname.Form(innameform.Data(),file_num);
     if(!fs::exists(inname.Data())){
@@ -402,16 +409,67 @@ TFile outfile(outname.Data(), "recreate");
     recoInterface->set("Reco","RecoEventData");
     readcount+=1;
     unsigned int entries = recoInterface->entries();
+     
+    int start=0;
+    int readidx=0;
+    char readpass[32];
+    char key[] = "pass";
+    
+    if(force_fill==1)fp1 = fopen("entries.txt", "r+");
+  
+    //fclose(fp1);
+    int keyskip=0;
+    while (recoInterface->numEvt() < entries) {  
+      if(force_fill==1){
+        if(count>2000)break;
+        if(start==0){
+          fscanf(fp1, "%d %s\n", &readidx,readpass);
+        }
+        printf("entry %d  start%d count %d read %d %s     %d\n",int(recoInterface->numEvt()),start,count, readidx,readpass,int(feof(fp1)));
+        if(start==0){
+          keyskip=0;
+          if(strcmp(key,readpass)!=0){
+            //printf("no pa skip %d\n",readidx);
+            drInterface->setnumEvt(readidx+1);
+            recoInterface->setnumEvt(readidx+1);
+            count+=1;
+            keyskip=1;
+            if(int(feof(fp1))==1)fprintf(fp1, "\n");
+          }
+          if(int(feof(fp1))==1){
+              //printf("######endof file\n");
+              start=1;
+              drInterface->setnumEvt(readidx+1);
+              recoInterface->setnumEvt(readidx+1);
+              count+=1;
 
-    while (recoInterface->numEvt() < entries) {
-      
+            //fclose(fp1);
+            //fp1 = fopen("entries.txt", "a");
+          }
+          else if(keyskip==1)continue;
+        }
+        //FILE *fp = fopen("entries.txt", "a");
+        if(start==1){ 
+          printf("fprint# %d %d pa", count, int(recoInterface->numEvt()));
+          fprintf(fp1, "%d pa", count);
+
+        }
+      }
     //if(count%int(entries/10.)==0)printf("%d%%--\n",int(100.*count/entries));
-    count+=1;
+    
     fibercheck=0;
     DRsimInterface::DRsimEventData drEvt;
     RecoInterface::RecoEventData recoEvt;
     drInterface->read(drEvt);
     recoInterface->read(recoEvt);
+    if(force_fill==1){
+      if(start==1){
+      fprintf(fp1, "ss\n");
+      //printf("ss\n");
+      }
+    }
+    count+=1;
+        
     E_C=recoEvt.E_C;
     E_S=recoEvt.E_S;
     E_Scorr=recoEvt.E_Scorr;
@@ -615,134 +673,7 @@ TFile outfile(outname.Data(), "recreate");
       p_Gen=p_Gen/1000.;
       E_Gen=E_Gen/1000.;
       Edep=0;
-      if(force_fill==1){
-
-          for (auto edepItr = drEvt.Edeps.begin(); edepItr != drEvt.Edeps.end(); ++edepItr) {
-          auto edep = *edepItr;
-          Edep += edep.Edep;
-
-          /*for (auto fiberItr = edepItr->fibers.begin(); fiberItr != edepItr->fibers.end(); ++fiberItr){
-            auto pos = segmentation->position(fiberItr->fiberNum);
-            TVector3 vec(float(pos.x()),float(pos.y()),float(pos.z()));
-            TVector3 p = fiberItr->Edep*vec.Unit();
-            TLorentzVector fiber4vec;
-            fiber4vec.SetPxPyPzE(p.x(),p.y(),p.z(),fiberItr->Edep);
-            fiber_iscerenkov.push_back(segmentation->IsCerenkov(fiberItr->fiberNum));
-            fiber_energy.push_back(fiber4vec.E());
-            fiber_eta.push_back(fiber4vec.Eta());
-            fiber_theta.push_back(fiber4vec.Theta());
-            fiber_phi.push_back(fiber4vec.Phi());
-
-          }*/  
-          }
-          deltheta2=deltheta2/pt_Gen;
-        delphi2=delphi2/pt_Gen;
-        width_Gen=delphi2+deltheta2;
-        TMatrixFSym covariance_matrix(2);
-        covariance_matrix(0, 0) = m00;
-        covariance_matrix(0, 1) = m01;
-        covariance_matrix(1, 1) = m11;
-        TVectorF eigen_values;
-        covariance_matrix.EigenVectors(eigen_values);
-        major_axis = std::sqrt(eigen_values[0] / pt_square);
-        minor_axis = std::sqrt(eigen_values[1] / pt_square);
-        ptd=std::sqrt(pt_square)/pt_Gen;
-        num_tower = -1;
-        TVector3* towercenterxyz = new TVector3();//should be energy center
-
-        auto towercenterpos = segmentation->towerposition(0,0);
-        towercenterxyz->SetXYZ(towercenterpos.x(),towercenterpos.y(),towercenterpos.z());
-        auto towercenterphi=float(towercenterxyz->Phi());
-        auto towercentertheta=float(towercenterxyz->Theta());
-        center_theta_img=0.;
-        center_phi_img=0.;
-        E_Scorr_img=0.;
-        E_C_img=0.;
-          for (auto tower : recoEvt.towers) {
-            int noTheta = tower.iTheta;
-          int noPhi = tower.iPhi;
-
-          auto towerpos = segmentation->towerposition(noTheta,noPhi);
-          towerxyz->SetXYZ(towerpos.x(),towerpos.y(),towerpos.z());
-          auto towerphi=float(towerxyz->Phi());
-          auto towereta=float(towerxyz->Eta());
-          auto towertheta=float(towerxyz->Theta());
-          tower_phi.push_back(towerphi);
-          tower_eta.push_back(towereta);
-          tower_theta.push_back(towertheta);
-          diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
-          diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
-          tower_diff_theta.push_back(diff_theta);
-          tower_diff_phi.push_back(diff_phi);
-          num_tower+=1;
-          int checktower=0;
-            for (auto fiber : tower.fibers) {
-
-              auto pos = segmentation->position(fiber.fiberNum);
-              isopposite=false;
-              x=float(pos.x());
-              y=float(pos.y());
-              z=float(pos.z());
-              fiberxyz->SetXYZ(x,y,z);
-              phi=float(fiberxyz->Phi());
-              eta=float(fiberxyz->Eta());
-              theta=float(fiberxyz->Theta());
-              if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break;
-              if(isjet==1 && num_jet==1){
-                if(abs(phi)>pi/2.){
-                  isopposite=true;
-                  if(phi<0){
-                    phi=pi+phi;
-                  }
-                  else{
-                    phi=phi-pi;
-                  }
-                }
-                else break;
-              }
-              tower_idx_eta.push_back(segmentation->numEta(fiber.fiberNum));
-              tower_idx_phi.push_back(segmentation->numPhi(fiber.fiberNum));
-              checktower=1;
-              fibercheck=1;
-              fibercount+=1;
-              depthindex=-1;
-              phiindex=-1;
-              etaindex=-1;
-              voxindex=-1;
-              imgindex=-1;
-              fiber_x.push_back(x);
-              fiber_y.push_back(y);
-              fiber_z.push_back(z);
-              fiber_iscerenkov.push_back(segmentation->IsCerenkov(fiber.fiberNum));
-              fiber_energy.push_back(float(fiber.E));
-              fiber_ecor.push_back(float(fiber.Ecorr));
-              if(segmentation->IsCerenkov(fiber.fiberNum)){
-                fiber_ecor_s.push_back(float(0.));
-                fiber_ecor_c.push_back(float(fiber.Ecorr));
-              }
-              else{
-                fiber_ecor_s.push_back(float(fiber.Ecorr));
-                fiber_ecor_c.push_back(float(0.));
-              }
-
-              fiber_n.push_back(fiber.n);
-              fiber_t.push_back(fiber.t);
-              fiber_itower.push_back(num_tower);
-              fiber_ix.push_back(segmentation->x(fiber.fiberNum));
-              fiber_iy.push_back(segmentation->y(fiber.fiberNum));
-              fiber_depth.push_back(float(fiber.depth));
-              fiber_r.push_back(float(TMath::Sqrt(x*x+y*y+z*z)));
-              depth=fiber.depth;
-              fiber_phi.push_back(phi);
-              fiber_theta.push_back(float(fiberxyz->Theta()));
-              fiber_eta.push_back(eta);
-              //std::sort(phis.begin(),phis.end());
-
-
-          }
-        }
-      }
-      else{
+      if(1){
       deltheta2=deltheta2/pt_Gen;
       delphi2=delphi2/pt_Gen;
       width_Gen=delphi2+deltheta2;
@@ -767,18 +698,19 @@ TFile outfile(outname.Data(), "recreate");
       E_Scorr_img=0.;
       E_C_img=0.;
 
+      
       for (auto tower : recoEvt.towers) {
         //towerData.iTheta = segmentation->numEta(hit->GetSiPMnum());
         //towerData.iPhi = segmentation->numPhi(hit->GetSiPMnum());
         int noTheta = int(tower.iTheta);
         int noPhi = int(tower.iPhi);
         if(abs(noTheta)>92 || noPhi<0 || noPhi>282){
-          printf("Error: outrange  ");
+          outrange+=1;
           fibercheck=0;
           break;
         }
         if(buf_fiber_same>=5){
-          printf("Error: repeated fiber ");
+          repeatfiber+=1;
           fibercheck=0;
           break;
         }
@@ -805,8 +737,8 @@ TFile outfile(outname.Data(), "recreate");
         tower_e_c.push_back(float(tower.E_C));
         tower_ecor_s.push_back(tower.E_Scorr);
         tower_ecor_dr.push_back(tower.E_DRcorr);
-        tower_n_s.push_back(float(tower.n_S));
-        tower_n_c.push_back(float(tower.n_C));
+        //tower_n_s.push_back(float(tower.n_S));
+        //tower_n_c.push_back(float(tower.n_C));
         tower_numx.push_back(tower.numx);
         tower_numy.push_back(tower.numy);
         tower_phi.push_back(towerphi);
@@ -815,13 +747,14 @@ TFile outfile(outname.Data(), "recreate");
         tower_nophi.push_back(noPhi);
         tower_notheta.push_back(noTheta);
         diff_phi=int(1 +TMath::Nint((towerphi-towercenterphi)/0.022));
-        diff_theta=int(1 +TMath::Nint((towertheta-towercentertheta)/0.022));
+        diff_theta=int(1 -TMath::Nint((towertheta-towercentertheta)/0.022));
         if(isjet==1){
           diff_phi=int(22 +TMath::Nint((towerphi-towercenterphi)/0.022));
           diff_theta=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
         }
         tower_diff_theta.push_back(diff_theta);
         tower_diff_phi.push_back(diff_phi);
+        
         num_tower+=1;
         int checktower=0;
         int fiberintowercount=0;
@@ -950,9 +883,11 @@ TFile outfile(outname.Data(), "recreate");
               }
                 
                 if(diff_theta<=2 && diff_theta>=0 && diff_phi<=2 && diff_phi>=0){
+                  if(diff_theta>0){
                   phiindex = Int_t(55-segmentation->x(fiber.fiberNum));
                   etaindex = Int_t(55-segmentation->y(fiber.fiberNum));
-                  if(diff_theta<1){
+                  }
+                  else{
                     phiindex = Int_t(segmentation->x(fiber.fiberNum));
                     etaindex = Int_t(segmentation->y(fiber.fiberNum));
                   }
@@ -1000,11 +935,16 @@ TFile outfile(outname.Data(), "recreate");
       cen_Ecorr_theta=cen_Ecorr_theta/recoEvt.E_Scorr;
       cen_Ecorr_phi=cen_Ecorr_phi/recoEvt.E_Scorr;
       }
-       if(fibercheck==1||force_fill==1){
+       if(fibercheck==1){
          eventtree.Fill();
        }
        else{
-         printf("no fiber\n");
+         //printf("no fiber\n");
+         nofiber+=1;
+         //if(force_fill==1){
+         //  drInterface->setnumEvt(count+=2);
+         //  recoInterface->setnumEvt(count+=2);
+         //}
        }
      }
    }
@@ -1020,6 +960,7 @@ outfile.Write("");
 outfile.Close();
 printf("--done\n");
 printf("%d files %d events filled in %s\n",readcount,int(eventtree.GetEntries()),outname.Data());
+printf("        unfilled faults %d  tower %d fiber %d\n",nofiber,outrange,repeatfiber);
 
 return 0;
 }

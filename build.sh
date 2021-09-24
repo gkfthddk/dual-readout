@@ -19,8 +19,11 @@ cp -r ../Detector/DRcalo/compact Reco/bin/
 cp -r ../Detector/DRcalo/compact DRsim/bin/
 cp -r ../Detector/DRcalo/compact analysis/bin/
 
+cp bin/P8 Gen/
 cp bin/DRsim DRsim/
 cp bin/Reco Reco/
 cp bin/process analysis/
 
-#./DRsim run_ele.mac 0 testel
+cd ..
+unset PYTHONPATH
+unset PYTHONHOME
