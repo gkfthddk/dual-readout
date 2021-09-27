@@ -13,6 +13,7 @@ public:
 
   void fill(const T* evt);
   void read(T& evt);
+  void setnumEvt(unsigned int num);
   void create(const std::string& name, const std::string& title);
   void set(const std::string& name, const std::string& title);
   void write();

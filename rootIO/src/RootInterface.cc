@@ -43,6 +43,11 @@ void RootInterface<T>::read(T& evt) {
 }
 
 template <typename T>
+void RootInterface<T>::setnumEvt(unsigned int num) {
+  fNumEvt=num;
+}
+
+template <typename T>
 void RootInterface<T>::write() {
   fFile->WriteTObject(fTree);
 }
