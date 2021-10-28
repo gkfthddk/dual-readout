@@ -20,7 +20,7 @@ cp -r ../Detector/DRcalo/compact Reco/bin/
 cp -r ../Detector/DRcalo/compact DRsim/bin/
 cp -r ../Detector/DRcalo/compact analysis/bin/
 
-cp bin/P8 Gen/
+cp bin/P8* Gen/
 cp bin/DRsim DRsim/
 cp bin/Reco Reco/
 cp bin/process analysis/
