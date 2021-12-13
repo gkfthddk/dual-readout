@@ -106,6 +106,7 @@ int main(int argc, char** argv) {
     #endif
     if (ui->IsGUI()) { UImanager->ApplyCommand("/control/execute gui.mac"); }
     // start interactive session
+    printf("Start UI\n");
     ui->SessionStart();
     delete ui;
     #endif

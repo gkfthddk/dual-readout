@@ -15,13 +15,6 @@ int main(int , char* argv[]) {
   RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>(filename+"_"+filenum+".root");
   recoInterface->create("Reco","RecoEventData");
 
-  fastjetInterface fjFiber_S;
-  fjFiber_S.init(recoInterface->getTree(),"RecoFiberJets_S");
-  fastjetInterface fjFiber_Scorr;
-  fjFiber_Scorr.init(recoInterface->getTree(),"RecoFiberJets_Scorr");
-  fastjetInterface fjFiber_C;
-  fjFiber_C.init(recoInterface->getTree(),"RecoFiberJets_C");
-
   RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(filename+"_"+filenum+".root");
   drInterface->set("DRsim","DRsimEventData");
 
@@ -51,10 +44,6 @@ int main(int , char* argv[]) {
     } // tower loop
     recoEvt->E_DR = RecoTower::E_DR(recoEvt->E_C,recoEvt->E_S);
     recoEvt->E_DRcorr = RecoTower::E_DR(recoEvt->E_C,recoEvt->E_Scorr);
-
-    fjFiber_S.runFastjet(recoTower->getFiber()->getFjInputs_S());
-    fjFiber_Scorr.runFastjet(recoTower->getFiber()->getFjInputs_Scorr());
-    fjFiber_C.runFastjet(recoTower->getFiber()->getFjInputs_C());
 
     recoInterface->fill(recoEvt);
     delete recoEvt;
