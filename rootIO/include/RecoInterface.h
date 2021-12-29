@@ -31,7 +31,7 @@ public:
     float E_Scorr;
     float E_DR;
     float E_DRcorr;
-    int n_C;
+    //int n_C;
     int n_S;
     int iTheta;
     int iPhi;

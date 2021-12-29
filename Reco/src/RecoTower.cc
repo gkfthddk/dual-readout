@@ -68,7 +68,7 @@ void RecoTower::reconstruct(const DRsimInterface::DRsimTowerData& tower, RecoInt
     auto theFiber = fFiber->getFiber();
     if (fSeg->IsCerenkov(theFiber.fiberNum)) {
       recoTower.E_C += theFiber.E;
-      recoTower.n_C += theFiber.n;
+      //recoTower.n_C += theFiber.n;
     } else {
       recoTower.E_S += theFiber.E;
       recoTower.E_Scorr += theFiber.Ecorr;

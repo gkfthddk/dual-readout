@@ -39,9 +39,11 @@ target_link_libraries(
 
 set(
   P8_SCRIPTS
-  ptcgun.cmnd
-  generic.cmnd
 )
+
+file(GLOB P8_COMMANDS ${PROJECT_SOURCE_DIR}/*.cmnd)
+file(COPY ${P8_COMMANDS} DESTINATION ${PROJECT_BINARY_DIR})
+
 
 foreach(_script ${P8_SCRIPTS})
   configure_file(
@@ -52,4 +54,5 @@ foreach(_script ${P8_SCRIPTS})
 endforeach()
 
 install(TARGETS P8ptcgen P8generic DESTINATION bin)
-install(FILES ${PROJECT_BINARY_DIR}/ptcgun.cmnd ${PROJECT_BINARY_DIR}/generic.cmnd DESTINATION .)
+#install(FILES ${PROJECT_BINARY_DIR}/ptcgun.cmnd ${PROJECT_BINARY_DIR}/generic.cmnd DESTINATION .)
+install(FILES ${P8_COMMANDS} DESTINATION .)

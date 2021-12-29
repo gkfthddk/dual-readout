@@ -11,7 +11,7 @@ RecoInterface::RecoTowerData::RecoTowerData(const DRsimInterface::DRsimTowerData
   E_Scorr = 0.;
   E_DR = 0.;
   E_DRcorr = 0.;
-  n_C = 0;
+  //n_C = 0;
   n_S = 0;
 }
 
@@ -31,6 +31,6 @@ RecoInterface::RecoEventData::RecoEventData() {
   E_Scorr = 0.;
   E_DR = 0.;
   E_DRcorr = 0.;
-  n_C = 0;
+  //n_C = 0;
   n_S = 0;
 }

@@ -338,7 +338,7 @@ TFile outfile(outname.Data(), "recreate");
   float depth=0.;
   int depthindex=-1;
   int phiindex=-1;
-  int etaindex=-1;
+  int thetaindex=-1;
   int voxindex=-1;
   int imgindex=-1;
   int buf_index=0;
@@ -346,6 +346,7 @@ TFile outfile(outname.Data(), "recreate");
   int diff_theta=0;
   int fibercount=0;
   bool isopposite = false;
+  int skipimg=0;
     int fibercheck=0;
   Float_t buf_fiber_e[5];
   Int_t buf_fiber_same=0;
@@ -358,20 +359,25 @@ TFile outfile(outname.Data(), "recreate");
   TLorentzVector* ptc_pxyz = new TLorentzVector();
   FILE *fp1;
   int count=0;
+  printf("#@! 001;");
   new GeoSvc({"./bin/compact/DRcalo.xml"});
 
   auto m_geoSvc = GeoSvc::GetInstance();
   std::string m_readoutName = "DRcaloSiPMreadout";
+  printf("#@! 002;");
 
   auto lcdd = m_geoSvc->lcdd();
   auto allReadouts = lcdd->readouts();
+  printf("#@! 003;");
   if (allReadouts.find(m_readoutName) == allReadouts.end()) {
     throw std::runtime_error("Readout " + m_readoutName + " not found! Please check tool configuration.");
   } else {
     std::cout << "Reading EDM from the collection " << m_readoutName << std::endl;
   }
 
+  printf("#@! 004;");
       auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
+  printf("#@! 005;");
   
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
     inname.Form(innameform.Data(),file_num);
@@ -419,6 +425,7 @@ TFile outfile(outname.Data(), "recreate");
   
     //fclose(fp1);
     int keyskip=0;
+    printf("#@! 1;");
     while (recoInterface->numEvt() < entries) {  
       if(force_fill==1){
         if(count>2000)break;
@@ -473,7 +480,7 @@ TFile outfile(outname.Data(), "recreate");
     E_C=recoEvt.E_C;
     E_S=recoEvt.E_S;
     E_Scorr=recoEvt.E_Scorr;
-    n_C=recoEvt.n_C;
+    //n_C=recoEvt.n_C;
     n_S=recoEvt.n_S;
     if(E_DR==recoEvt.E_DR)printf("same energy %d\n",count);
     E_DR=recoEvt.E_DR;
@@ -485,8 +492,6 @@ TFile outfile(outname.Data(), "recreate");
     tower_phi.clear();
     tower_notheta.clear();
     tower_nophi.clear();
-    tower_idx_eta.clear();
-    tower_idx_phi.clear();
     tower_numx.clear();
     tower_numy.clear();
     tower_e_s.clear();
@@ -507,6 +512,7 @@ TFile outfile(outname.Data(), "recreate");
     }
 
     fibercheck=0;
+    printf("#@! 4;");
     for ( int num_jet=0; num_jet<2; num_jet++){
       if(num_jet==1 && isjet==0) break;
       fibercount=0;
@@ -528,6 +534,8 @@ TFile outfile(outname.Data(), "recreate");
       fiber_phi.clear();
       fiber_eta.clear();
       fiber_iscerenkov.clear();
+      tower_idx_eta.clear();
+      tower_idx_phi.clear();
       ptc_E.clear();
       ptc_pt.clear();
       ptc_p.clear();
@@ -573,6 +581,7 @@ TFile outfile(outname.Data(), "recreate");
       cen_Ecorr_theta=0.;
       cen_Ecorr_phi=0.;
       TLorentzVector ptc_sum;
+    printf("#@! 5;");
       
       for (auto genptc : drEvt.GenPtcs){
         ptc_pxyz->SetPxPyPzE(genptc.px,genptc.py,genptc.pz,genptc.E);
@@ -702,21 +711,26 @@ TFile outfile(outname.Data(), "recreate");
       E_C_img=0.;
 
       
+    printf("#@! 6;");
       for (auto tower : recoEvt.towers) {
+    printf("#@! 61;");
         //towerData.iTheta = segmentation->numEta(hit->GetSiPMnum());
         //towerData.iPhi = segmentation->numPhi(hit->GetSiPMnum());
-        int noTheta = int(tower.iTheta);
-        int noPhi = int(tower.iPhi);
-        if(abs(noTheta)>92 || noPhi<0 || noPhi>282){
-          outrange+=1;
-          fibercheck=0;
-          break;
+        int noTheta = int(tower.iTheta);// -1,0,1 ...
+        int noPhi = int(tower.iPhi);//282,0,1 ...
+        if(isjet==0){
+          if(abs(noTheta)>92 || noPhi<0 || noPhi>282){
+            outrange+=1;
+            fibercheck=0;
+            break;
+          }
         }
         if(buf_fiber_same>=5){
           repeatfiber+=1;
           fibercheck=0;
           break;
         }
+    printf("#@! 62;");
         auto towerpos = segmentation->towerposition(noTheta,noPhi);
         towerxyz->SetXYZ(towerpos.x(),towerpos.y(),towerpos.z());
         float towerphi=float(towerxyz->Phi());
@@ -736,12 +750,13 @@ TFile outfile(outname.Data(), "recreate");
           }
           else continue;
         }
+    printf("#@! 7;");
         tower_e_s.push_back(float(tower.E_S));
         tower_e_c.push_back(float(tower.E_C));
         tower_ecor_s.push_back(tower.E_Scorr);
         tower_ecor_dr.push_back(tower.E_DRcorr);
-        //tower_n_s.push_back(float(tower.n_S));
-        //tower_n_c.push_back(float(tower.n_C));
+        //tower_n_s.push_back(int(tower.n_S));
+        //tower_n_c.push_back(int(tower.n_C));
         tower_numx.push_back(tower.numx);
         tower_numy.push_back(tower.numy);
         tower_phi.push_back(towerphi);
@@ -761,9 +776,15 @@ TFile outfile(outname.Data(), "recreate");
         num_tower+=1;
         int checktower=0;
         int fiberintowercount=0;
+        skipimg=0;
+        if(isjet==1){
+        if(noTheta+40<0 || noTheta+40>80) skipimg=1;
+        if(noPhi-282+40-1<0 && noPhi+40>80) skipimg=1;//phi 0 방향일때만
+        }
         for (auto fiber : tower.fibers) {
         
           
+    printf("#@! 8");
             auto pos = segmentation->position(fiber.fiberNum);
             isopposite=false;
             x=float(pos.x());
@@ -771,14 +792,14 @@ TFile outfile(outname.Data(), "recreate");
             z=float(pos.z());
             fiberxyz->SetXYZ(x,y,z);
             phi=float(fiberxyz->Phi());
-        if(num_jet==0&&fibercount<5){
-          if(buf_fiber_e[fibercount]==fiber.Ecorr)buf_fiber_same+=1;
-          buf_fiber_e[fibercount]=fiber.Ecorr;
-        }
-        fiberintowercount+=1;
+            if(num_jet==0&&fibercount<5){
+              if(buf_fiber_e[fibercount]==fiber.Ecorr)buf_fiber_same+=1;
+              buf_fiber_e[fibercount]=fiber.Ecorr;
+            }
+            fiberintowercount+=1;
             eta=float(fiberxyz->Eta());
             theta=float(fiberxyz->Theta());
-            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break; // ijset 할때 phi, nophi(phi index)도 연동해야
+            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break; // ijset 할때 phi 반대쪽에서 nophi(phi index)도 연동해야 반대편이면 nophi가 반대쪽임
             if(isjet==1 && num_jet==1){
               if(abs(phi)>pi/2.){
                 isopposite=true;
@@ -791,14 +812,18 @@ TFile outfile(outname.Data(), "recreate");
               }
               else break;
             }
-            tower_idx_eta.push_back(segmentation->numEta(fiber.fiberNum));
+            diff_theta=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
+            diff_phi=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
+            if(noTheta!=(segmentation->numEta(fiber.fiberNum)))printf("no theta different\n");//tower 4 개로 나눠서 픽셀화할예정
+            if(noPhi!=(segmentation->numPhi(fiber.fiberNum)))printf("no phi different\n");
+            tower_idx_eta.push_back(segmentation->numEta(fiber.fiberNum));//tower 4 개로 나눠서 픽셀화할예정
             tower_idx_phi.push_back(segmentation->numPhi(fiber.fiberNum));
             checktower=1;
             fibercheck=1;
             fibercount+=1;
             depthindex=-1;
             phiindex=-1;
-            etaindex=-1;
+            thetaindex=-1;
             voxindex=-1;
             imgindex=-1;
             fiber_x.push_back(x);
@@ -829,55 +854,29 @@ TFile outfile(outname.Data(), "recreate");
             fiber_eta.push_back(eta);
             //std::sort(phis.begin(),phis.end());
             
-            if(isjet==1){// need to revise#############################
-                /*if(phimax>phi && phimin<=phi){
-                if(etamax>eta && etamin<=eta){
-                
-                for(buf_index=0;buf_index<num_phicut-1;buf_index++){
-                  if(28>int(segmentation->x(fiber.fiberNum))){
-                    if(phi<(phicut[buf_index]+phicut[buf_index+1])/2.){
-                      phiindex=Int_t(buf_index*2);
-                    }
-                    else{
-                      phiindex=Int_t(buf_index*2+1);
-                    }
-                    break;
-                  }
+            if(isjet==1 &&skipimg==0){// need to revise#############################
+    printf("#@! 9;");
+                if(noTheta>=0){
+                  fiber_ix.push_back(segmentation->x(fiber.fiberNum));
+                  if((segmentation->y(fiber.fiberNum))<28) phiindex=1;
+                  else phiindex=0;
+                  if((segmentation->x(fiber.fiberNum))<28) thetaindex=1;
+                  else thetaindex=0;
                 }
-                for(buf_index=0;buf_index<num_etacut-1;buf_index++){
-                  if(etacut[buf_index]<eta && eta<etacut[buf_index+1]){
-                    if(eta<(etacut[buf_index]+etacut[buf_index+1])/2.){
-                      if(buf_index>0)etaindex=Int_t(buf_index*2-1);
-                    }
-                    else{
-                      if(buf_index<num_etacut-2)etaindex=Int_t(buf_index*2);
-                    }
-                    break;
-                  }
+                else{
+                  fiber_ix.push_back(segmentation->x(fiber.fiberNum));
+                  if((segmentation->y(fiber.fiberNum))<28) phiindex=0;
+                  else phiindex=1;
+                  if((segmentation->x(fiber.fiberNum))<28) thetaindex=0;
+                  else thetaindex=1;
                 }
-
-                }}*/
+                thetaindex=thetaindex+(noTheta+40)*2;
+                if(noPhi>141) phiindex=phiindex+(noPhi-282+40-1)*2;
+                else phiindex=phiindex+(noPhi+40)*2;
               if(!segmentation->IsCerenkov(fiber.fiberNum)){
               cen_Ecorr_theta+=theta*fiber.Ecorr;
               cen_Ecorr_phi+=phi*fiber.Ecorr;
               }
-                
-                if(diff_theta<=2 && diff_theta>=0 && diff_phi<=2 && diff_phi>=0){
-                  if(Int_t(segmentation->x(fiber.fiberNum))>27)phiindex=0;
-                  else phiindex=1;
-                  if(Int_t(segmentation->y(fiber.fiberNum))>27)etaindex=0;
-                  else etaindex=1;
-                  if(diff_theta<1){
-                    if(Int_t(segmentation->x(fiber.fiberNum))<28)phiindex=0;
-                    else phiindex=1;
-                    if(Int_t(segmentation->y(fiber.fiberNum))<28)etaindex=0;
-                    else etaindex=1;
-                  }
-                }
-                else{
-                  phiindex=-1;
-                  etaindex=-1;
-                }
             }
             else{
               if(!segmentation->IsCerenkov(fiber.fiberNum)){
@@ -888,25 +887,25 @@ TFile outfile(outname.Data(), "recreate");
                 if(diff_theta<=2 && diff_theta>=0 && diff_phi<=2 && diff_phi>=0){
                   if(diff_theta>0){
                   phiindex = Int_t(55-segmentation->x(fiber.fiberNum));
-                  etaindex = Int_t(55-segmentation->y(fiber.fiberNum));
+                  thetaindex = Int_t(55-segmentation->y(fiber.fiberNum));
                   }
                   else{
                     phiindex = Int_t(segmentation->x(fiber.fiberNum));
-                    etaindex = Int_t(segmentation->y(fiber.fiberNum));
+                    thetaindex = Int_t(segmentation->y(fiber.fiberNum));
                   }
                 }
                 else{
                   phiindex=-1;
-                  etaindex=-1;
+                  thetaindex=-1;
                 }
             }
           
 
-            if(phiindex!=-1 && etaindex!=-1){
-                if(isjet==1) imgindex=45*phibin*etabin*diff_theta+45*phibin*etaindex+phibin*diff_phi+phiindex;//[theta,phi]
-                else imgindex=3*phibin*etabin*diff_theta+3*phibin*etaindex+phibin*diff_phi+phiindex;//[theta,phi]
-                //imgindex=phibin*etabin*diff_phi+phibin*etaindex+*phibin+phiindex;//[eta,phi]
-                //imgindex=phibin*etaindex+phiindex;//[eta,phi]
+            if(phiindex!=-1 && thetaindex!=-1){
+                if(isjet==1) imgindex=162*thetaindex+phiindex;//[theta,phi]
+                else imgindex=3*phibin*etabin*diff_theta+3*phibin*thetaindex+phibin*diff_phi+phiindex;//[theta,phi]
+                //imgindex=phibin*etabin*diff_phi+phibin*thetaindex+*phibin+phiindex;//[eta,phi]
+                //imgindex=phibin*thetaindex+phiindex;//[eta,phi]
                 if(segmentation->IsCerenkov(fiber.fiberNum)){
                   image_ecor_c_[imgindex]+=fiber.Ecorr;
                   E_C_img+=fiber.Ecorr;
