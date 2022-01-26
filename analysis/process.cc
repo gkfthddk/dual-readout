@@ -38,49 +38,77 @@ namespace fs = std::filesystem;
 
 
 //./process ../../el2entest2_%d.root 0 1 ../../elentest2 0 0
-int main(int , char* argv[]){
+int main(int argc, char* argv[]){
+  printf("begin;\n");
   TString innameform = argv[1];
   int num_file_begin = std::stoi(argv[2]);
   int num_file_end = std::stoi(argv[3]);
   TString filename = argv[4];  
   int isjet = atoi(argv[5]);
-  int force_fill = atoi(argv[6]);
+  int force_fill = 0;
+  TString reconameform;
+  if(argc>6)reconameform = argv[6];
+  if(argc>7)force_fill = atoi(argv[7]);
   TString inname;
+  TString reconame;
   TFile* box;
   TList* keys;
   int readcount=0;
   printf("file will be checked %d\n",num_file_end-num_file_begin);
+  int check_hep=0;
+  int check_dr=0;
+  int check_reco=0;
+  int nokey=0;
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
     inname.Form(innameform.Data(),file_num);
+    reconame=inname.Copy();
+    reconame.ReplaceAll(".root","_Reco.root");
+    if(argc>6)reconame.Form(reconameform.Data(),file_num);
     if(!fs::exists(inname.Data())){
       printf("nofile %s;\n",inname.Data());
       continue;}
+    //printf("file loaded %s..%d.;\n",inname.Data(),keys->GetEntries());
+    nokey=0;
+    check_hep=0;
+    check_dr=0;
+    check_reco=0;
+    if(fs::exists(reconame.Data())){
+        box=TFile::Open(reconame.Data(),"read");
+        keys = box->GetListOfKeys();
+        if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
+        keys->Clear();
+        box->Close();
+    }
     box=TFile::Open(inname.Data(),"read");
     keys = box->GetListOfKeys();
-    //printf("file loaded %s..%d.;\n",inname.Data(),keys->GetEntries());
     if(keys->GetEntries()>1){
-      /*if(isjet==1){
-        if(strcmp(keys->At(1)->GetName(),"DRsim")!=0 || strcmp(keys->At(2)->GetName(),"Reco")!=0){
-          printf("noevent1\n");
-          continue;
-        }
+      for(int i=0;i<keys->GetEntries();i++){
+        if(strcmp(keys->At(i)->GetName(),"hepmc3_tree")==0)check_hep=1;
+        if(strcmp(keys->At(i)->GetName(),"DRsim")==0)check_dr=1;
+        if(strcmp(keys->At(i)->GetName(),"Reco")==0)check_reco=1;
       }
-      if(isjet==0){
-        if(strcmp(keys->At(0)->GetName(),"DRsim")!=0 || strcmp(keys->At(1)->GetName(),"Reco")!=0){
-          printf("noevent2\n");
-          continue;
-        }
-      }*/
+      if(check_hep==0 && isjet==1) nokey=1;
+      if(check_dr==0 || check_reco==0) nokey=1;
     }
     else{
+      nokey=1;
+    }
+    if(nokey==1){
       printf("nokey1 %d\n",keys->GetEntries());
       continue;
     }
     keys->Clear();
     box->Close();
+    readcount+=1;
+  }
+  readcount=1;
+  if(readcount==0){
+    printf("no file found..\n");
+    return(1);
   }
   
   
+  readcount=0;
   
   
   float pi=TMath::Pi();
@@ -91,6 +119,8 @@ int main(int , char* argv[]){
 TFile outfile(outname.Data(), "recreate");
   std::vector<Int_t> tower_idx_eta;
   std::vector<Int_t> tower_idx_phi;
+  std::vector<Int_t> tower_no_eta;
+  std::vector<Int_t> tower_no_phi;
   std::vector<Float_t> tower_eta;
   std::vector<Float_t> tower_theta;
   std::vector<Float_t> tower_phi;
@@ -126,20 +156,22 @@ TFile outfile(outname.Data(), "recreate");
   float E_Scorr_img=0.;
   int n_C=0.;
   int n_S=0.;
+  int idx_phi=0.;
+  int idx_theta=0.;
   float E_DR=0.;
   float E_DRcorr=0.;
   float Eleak_nu=0;
   float Pleak =0;
-  float phicut[46] = {-0.499591, -0.47728, -0.455022, -0.432663, -0.410903, -0.388499, -0.366236, -0.34418, -0.321856, -0.299631, -0.2775, -0.25534, -0.233038, -0.210916, -0.188759, -0.166583, -0.144445, -0.122228, -0.098836, -0.077592, -0.055648, -0.033304, -0.011214, 0.011112, 0.033254, 0.055531, 0.07785, 0.099895, 0.122083, 0.144345, 0.166667, 0.188781, 0.211015, 0.233232, 0.255433, 0.277524, 0.299768, 0.322163, 0.344244, 0.366127, 0.388528, 0.410884, 0.433001, 0.455096, 0.477211, 0.499555};
-  float etacut[47] = {-0.509844, -0.487655, -0.465542, -0.443474, -0.421363, -0.399169, -0.376835, -0.35499, -0.332782, -0.310622, -0.288396, -0.266306, -0.244095, -0.221847, -0.198638, -0.17761, -0.155555, -0.133243, -0.110986, -0.088896, -0.066692, -0.044368, -0.022242, 1.8e-05, 0.022211, 0.04439, 0.066663, 0.088883, 0.111086, 0.133137, 0.155502, 0.17757, 0.199889, 0.222027, 0.244179, 0.266126, 0.288726, 0.310622, 0.332651, 0.354897, 0.377076, 0.399316, 0.421363, 0.443408, 0.465533, 0.48769, 0.509791};
   Float_t center_theta_img=0.;
   Float_t center_phi_img=0.;
   Float_t center_theta_gen=0.;
   Float_t center_phi_gen=0.;
   Float_t cen_Ecorr_theta=0.;
   Float_t cen_Ecorr_phi=0.;
-  int num_phicut=46;
-  int num_etacut=47;
+  Int_t num_jet=0;
+  Int_t num_entry=-1;
+  Int_t not_phi=0;
+  Int_t not_theta=0;
   std::vector<Float_t> tower_e_s;
   std::vector<Float_t> tower_e_c;
   std::vector<Int_t> tower_n_s;
@@ -177,8 +209,6 @@ TFile outfile(outname.Data(), "recreate");
   std::vector<Float_t> ptc_vy;
   std::vector<Float_t> ptc_vz;
   std::vector<Float_t> ptc_vt;
-  
-
   std::vector<Int_t> ptc_pid;
 
   Int_t num_tower=0;
@@ -193,6 +223,8 @@ TFile outfile(outname.Data(), "recreate");
   eventtree.Branch("tower_diff_phi","vector<Int_t>",&tower_diff_phi);
   eventtree.Branch("tower_idx_eta","vector<Int_t>",&tower_idx_eta);
   eventtree.Branch("tower_idx_phi","vector<Int_t>",&tower_idx_phi);
+  eventtree.Branch("tower_no_eta","vector<Int_t>",&tower_no_eta);
+  eventtree.Branch("tower_no_phi","vector<Int_t>",&tower_no_phi);
   eventtree.Branch("tower_numx","vector<Int_t>",&tower_numx);
   eventtree.Branch("tower_numy","vector<Int_t>",&tower_numy);
   eventtree.Branch("ptd",&ptd,"ptd/F");
@@ -213,6 +245,10 @@ TFile outfile(outname.Data(), "recreate");
   eventtree.Branch("electron_mult",&electron_mult,"electron_mult/I");
   eventtree.Branch("muon_mult",&muon_mult,"muon_mult/I");
   eventtree.Branch("photon_mult",&photon_mult,"photon_mult/I");
+  eventtree.Branch("num_jet",&num_jet,"num_jet/I");
+  eventtree.Branch("num_entry",&num_entry,"num_entry/I");
+  eventtree.Branch("not_theta",&not_theta,"not_theta/I");
+  eventtree.Branch("not_phi",&not_phi,"not_phi/I");
   eventtree.Branch("E_Gen",&E_Gen,"E_Gen/F");
   eventtree.Branch("mass_Gen",&mass_Gen,"mass_Gen/F");
   eventtree.Branch("pt_Gen",&pt_Gen,"pt_Gen/F");
@@ -299,32 +335,9 @@ TFile outfile(outname.Data(), "recreate");
   int depthbin=89;//22+1
   float depthmin=34;
   float depthmax=3060;
-  int phibin=56;
-  int etabin=56;
+  float etabin=56;
+  float phibin=56;
 
-  //float phimin=-0.008;
-  //float phimax=0.0081;
-  //float etamin=0.003;
-  //float etamax=0.0191;
-  float phimin=-0.0072;
-  float phimax=0.0078;
-  float etamin=0.004;
-  float etamax=0.019;
-  if(isjet==1){
-    printf("jet %d\n",isjet);
-    //int n_in_bin=0.25; //number of towers in a bin
-    phibin=2;
-    etabin=2;
-    phimin=phicut[0];
-    phimax=phicut[num_phicut-1];
-    etamin=etacut[0];
-    etamax=etacut[num_etacut-1];
-    //etamin90=-0.0221*90/4.;
-    //etamax90=0.0221*90/4.;
-  }
-  float depthsize=1.*(depthmax-depthmin)/depthbin;
-  float phisize=1.*(phimax-phimin)/phibin;
-  float etasize=1.*(etamax-etamin)/etabin;
   float eta=0.;
   float theta=0.;
   float phi=0.;
@@ -349,6 +362,7 @@ TFile outfile(outname.Data(), "recreate");
   int skipimg=0;
     int fibercheck=0;
   Float_t buf_fiber_e[5];
+  Float_t buf_fiber_phi[5];
   Int_t buf_fiber_same=0;
   Int_t outrange=0;
   Int_t repeatfiber=0;
@@ -358,13 +372,11 @@ TFile outfile(outname.Data(), "recreate");
   TVector3* towerxyz = new TVector3();
   TLorentzVector* ptc_pxyz = new TLorentzVector();
   FILE *fp1;
-  int count=0;
-  printf("#@! 001;");
+  Int_t count=0;
   new GeoSvc({"./bin/compact/DRcalo.xml"});
 
   auto m_geoSvc = GeoSvc::GetInstance();
   std::string m_readoutName = "DRcaloSiPMreadout";
-  printf("#@! 002;");
 
   auto lcdd = m_geoSvc->lcdd();
   auto allReadouts = lcdd->readouts();
@@ -375,33 +387,47 @@ TFile outfile(outname.Data(), "recreate");
     std::cout << "Reading EDM from the collection " << m_readoutName << std::endl;
   }
 
-  printf("#@! 004;");
+  //printf("#@! 004;");
       auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
-  printf("#@! 005;");
   
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
     inname.Form(innameform.Data(),file_num);
+    reconame=inname.Copy();
+    reconame.ReplaceAll(".root","_Reco.root");
+    if(argc>6){
+      reconame.Form(reconameform.Data(),file_num);
+      printf("load reco file\n");
+    }
     if(!fs::exists(inname.Data())){
       printf("nofile %s;\n",inname.Data());
       continue;}
+    nokey=0;
+    check_hep=0;
+    check_dr=0;
+    check_reco=0;
+    if(fs::exists(reconame.Data())){
+        box=TFile::Open(reconame.Data(),"read");
+        keys = box->GetListOfKeys();
+        if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
+        keys->Clear();
+        box->Close();
+    }
     box=TFile::Open(inname.Data(),"read");
     keys = box->GetListOfKeys();
-    
     if(keys->GetEntries()>1){
-      /*if(isjet==1){
-        if(strcmp(keys->At(1)->GetName(),"DRsim")!=0 || strcmp(keys->At(2)->GetName(),"Reco")!=0){
-          printf("noevent1\n");
-          continue;
-        }
+      for(int i=0;i<keys->GetEntries();i++){
+        if(strcmp(keys->At(i)->GetName(),"hepmc3_tree")==0)check_hep=1;
+        if(strcmp(keys->At(i)->GetName(),"DRsim")==0)check_dr=1;
+        if(strcmp(keys->At(i)->GetName(),"Reco")==0)check_reco=1;
       }
-      if(isjet==0){
-        if(strcmp(keys->At(0)->GetName(),"DRsim")!=0 || strcmp(keys->At(1)->GetName(),"Reco")!=0){
-          printf("noevent2\n");
-          continue;
-        }
-      }*/
+      if(check_hep==0 && isjet==1) nokey=1;
+      if(check_dr==0 || check_reco==0) nokey=1;
     }
     else{
+      nokey=1;
+    }
+    nokey=0;
+    if(nokey==1){
       printf("nokey1 %d\n",keys->GetEntries());
       continue;
     }
@@ -409,9 +435,15 @@ TFile outfile(outname.Data(), "recreate");
     box->Close();
     printf("loaded %s...;\n",inname.Data());
     //mychain.Add(inname+"/DRsim");
+    
     RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(std::string(inname.Data()));
-    RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>(std::string(inname.Data()));
+    //if(!fs::exists(reconame.Data()))reconame=inname.Copy();
+    //if(argc>6)reconame.Form(reconameform.Data(),file_num);
+    RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>(std::string(reconame.Data()));
+    //RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>("../../tools/box/gg_70GeV_799_Reco.root");
+    printf("Loading DR interface\n");
     drInterface->set("DRsim","DRsimEventData");
+    printf("Loading Reco interface\n");
     recoInterface->set("Reco","RecoEventData");
     readcount+=1;
     unsigned int entries = recoInterface->entries();
@@ -425,21 +457,20 @@ TFile outfile(outname.Data(), "recreate");
   
     //fclose(fp1);
     int keyskip=0;
-    printf("#@! 1;");
     while (recoInterface->numEvt() < entries) {  
       if(force_fill==1){
-        if(count>2000)break;
+        //if(count>2000)break;
         if(start==0){
           fscanf(fp1, "%d %s\n", &readidx,readpass);
         }
         printf("entry %d  start%d count %d read %d %s     %d\n",int(recoInterface->numEvt()),start,count, readidx,readpass,int(feof(fp1)));
+        count+=1;
         if(start==0){
           keyskip=0;
           if(strcmp(key,readpass)!=0){
             //printf("no pa skip %d\n",readidx);
             drInterface->setnumEvt(readidx+1);
             recoInterface->setnumEvt(readidx+1);
-            count+=1;
             keyskip=1;
             if(int(feof(fp1))==1)fprintf(fp1, "\n");
           }
@@ -464,6 +495,7 @@ TFile outfile(outname.Data(), "recreate");
       }
     //if(count%int(entries/10.)==0)printf("%d%%--\n",int(100.*count/entries));
     
+    num_entry+=1;
     fibercheck=0;
     DRsimInterface::DRsimEventData drEvt;
     RecoInterface::RecoEventData recoEvt;
@@ -481,7 +513,7 @@ TFile outfile(outname.Data(), "recreate");
     E_S=recoEvt.E_S;
     E_Scorr=recoEvt.E_Scorr;
     //n_C=recoEvt.n_C;
-    n_S=recoEvt.n_S;
+    //n_S=recoEvt.n_S;
     if(E_DR==recoEvt.E_DR)printf("same energy %d\n",count);
     E_DR=recoEvt.E_DR;
     E_DRcorr=recoEvt.E_DRcorr;
@@ -512,8 +544,7 @@ TFile outfile(outname.Data(), "recreate");
     }
 
     fibercheck=0;
-    printf("#@! 4;");
-    for ( int num_jet=0; num_jet<2; num_jet++){
+    for ( num_jet=0; num_jet<2; num_jet++){
       if(num_jet==1 && isjet==0) break;
       fibercount=0;
       fiber_energy.clear();
@@ -536,6 +567,8 @@ TFile outfile(outname.Data(), "recreate");
       fiber_iscerenkov.clear();
       tower_idx_eta.clear();
       tower_idx_phi.clear();
+      tower_no_eta.clear();
+      tower_no_phi.clear();
       ptc_E.clear();
       ptc_pt.clear();
       ptc_p.clear();
@@ -557,7 +590,6 @@ TFile outfile(outname.Data(), "recreate");
       FILL_ZEROI(image_n_c_,28224);
       FILL_ZERO(image_ecor_s_,28224);
       FILL_ZEROI(image_n_s_,28224);
-      buf_fiber_same=0;
       m00 = 0.;
       m01 = 0.;
       m11 = 0.;
@@ -580,12 +612,14 @@ TFile outfile(outname.Data(), "recreate");
       center_phi_gen=0.;
       cen_Ecorr_theta=0.;
       cen_Ecorr_phi=0.;
+      not_theta=0;
+      not_phi=0;
       TLorentzVector ptc_sum;
-    printf("#@! 5;");
       
       for (auto genptc : drEvt.GenPtcs){
         ptc_pxyz->SetPxPyPzE(genptc.px,genptc.py,genptc.pz,genptc.E);
         phi=float(ptc_pxyz->Phi());
+        isopposite=false;
         if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)continue;
         if(isjet==1 && num_jet==1){
           if(abs(phi)>pi/2.){
@@ -615,6 +649,7 @@ TFile outfile(outname.Data(), "recreate");
       for (auto genptc : drEvt.GenPtcs){
         ptc_pxyz->SetPxPyPzE(genptc.px,genptc.py,genptc.pz,genptc.E);
         phi=float(ptc_pxyz->Phi());
+        isopposite=false;
         if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)continue;
         if(isjet==1 && num_jet==1){
           if(abs(phi)>pi/2.){
@@ -709,14 +744,13 @@ TFile outfile(outname.Data(), "recreate");
       center_phi_img=0.;
       E_Scorr_img=0.;
       E_C_img=0.;
+      buf_fiber_same=0;
 
-      
-    printf("#@! 6;");
       for (auto tower : recoEvt.towers) {
-    printf("#@! 61;");
         //towerData.iTheta = segmentation->numEta(hit->GetSiPMnum());
         //towerData.iPhi = segmentation->numPhi(hit->GetSiPMnum());
         int noTheta = int(tower.iTheta);// -1,0,1 ...
+        if(abs(noTheta)>91)continue;
         int noPhi = int(tower.iPhi);//282,0,1 ...
         if(isjet==0){
           if(abs(noTheta)>92 || noPhi<0 || noPhi>282){
@@ -730,13 +764,13 @@ TFile outfile(outname.Data(), "recreate");
           fibercheck=0;
           break;
         }
-    printf("#@! 62;");
         auto towerpos = segmentation->towerposition(noTheta,noPhi);
         towerxyz->SetXYZ(towerpos.x(),towerpos.y(),towerpos.z());
         float towerphi=float(towerxyz->Phi());
         float towereta=float(towerxyz->Eta());
         float towertheta=float(towerxyz->Theta());
         
+        isopposite=false;
         if(isjet==1 && num_jet==0 && abs(towerphi)>pi/2.)continue;
         if(isjet==1 && num_jet==1){
           if(abs(towerphi)>pi/2.){
@@ -750,7 +784,6 @@ TFile outfile(outname.Data(), "recreate");
           }
           else continue;
         }
-    printf("#@! 7;");
         tower_e_s.push_back(float(tower.E_S));
         tower_e_c.push_back(float(tower.E_C));
         tower_ecor_s.push_back(tower.E_Scorr);
@@ -778,13 +811,26 @@ TFile outfile(outname.Data(), "recreate");
         int fiberintowercount=0;
         skipimg=0;
         if(isjet==1){
-        if(noTheta+40<0 || noTheta+40>80) skipimg=1;
-        if(noPhi-282+40-1<0 && noPhi+40>80) skipimg=1;//phi 0 방향일때만
+        //if(noTheta+40<0 || noTheta+40>80) skipimg=1;
+        //if(noPhi-282+40-1<0 && noPhi+40>80) skipimg=1;//phi 0 방향일때만
         }
         for (auto fiber : tower.fibers) {
+            if(fiber.Ecorr==0)continue;
+            if(noTheta!=(segmentation->numEta(fiber.fiberNum))){
+              not_theta=1;
+              //printf("no theta different\n");//tower 4 개로 나눠서 픽셀화할예정
+            }
+            if(noPhi!=(segmentation->numPhi(fiber.fiberNum))){
+              not_phi=1;
+              //printf("no phi different\n");
+             }
+            idx_theta=segmentation->numEta(fiber.fiberNum);//tower 4 개로 나눠서 픽셀화할예정
+            idx_phi=segmentation->numPhi(fiber.fiberNum);
+        if(abs(idx_theta)>91){
+              printf("fiber fibernum %d notheta %d nophi %d\n",fiber.fiberNum,idx_theta,idx_phi);
+              continue;
+            }
         
-          
-    printf("#@! 8");
             auto pos = segmentation->position(fiber.fiberNum);
             isopposite=false;
             x=float(pos.x());
@@ -792,14 +838,15 @@ TFile outfile(outname.Data(), "recreate");
             z=float(pos.z());
             fiberxyz->SetXYZ(x,y,z);
             phi=float(fiberxyz->Phi());
-            if(num_jet==0&&fibercount<5){
-              if(buf_fiber_e[fibercount]==fiber.Ecorr)buf_fiber_same+=1;
+            /*if(num_tower==0&&num_jet==0&&fibercount<5&&fiber.Ecorr>0){
+              if(buf_fiber_e[fibercount]==fiber.Ecorr and buf_fiber_phi[fibercount]==phi)buf_fiber_same+=1;
               buf_fiber_e[fibercount]=fiber.Ecorr;
-            }
+              buf_fiber_phi[fibercount]=phi;
+            }*/
             fiberintowercount+=1;
             eta=float(fiberxyz->Eta());
             theta=float(fiberxyz->Theta());
-            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)break; // ijset 할때 phi 반대쪽에서 nophi(phi index)도 연동해야 반대편이면 nophi가 반대쪽임
+            if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)continue; // ijset 할때 phi 반대쪽에서 nophi(phi index)도 연동해야 반대편이면 nophi가 반대쪽임
             if(isjet==1 && num_jet==1){
               if(abs(phi)>pi/2.){
                 isopposite=true;
@@ -810,14 +857,22 @@ TFile outfile(outname.Data(), "recreate");
                   phi=phi-pi;
                 }
               }
-              else break;
+              else continue;
             }
             diff_theta=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
             diff_phi=int(22 +TMath::Nint((towertheta-towercentertheta)/0.022));
-            if(noTheta!=(segmentation->numEta(fiber.fiberNum)))printf("no theta different\n");//tower 4 개로 나눠서 픽셀화할예정
-            if(noPhi!=(segmentation->numPhi(fiber.fiberNum)))printf("no phi different\n");
-            tower_idx_eta.push_back(segmentation->numEta(fiber.fiberNum));//tower 4 개로 나눠서 픽셀화할예정
-            tower_idx_phi.push_back(segmentation->numPhi(fiber.fiberNum));
+            tower_idx_eta.push_back(idx_theta);
+            tower_idx_phi.push_back(idx_phi);
+            tower_no_eta.push_back(noTheta);//tower 4 개로 나눠서 픽셀화할예정
+            tower_no_phi.push_back(noPhi);
+            skipimg=0;
+            if(idx_theta+40<0 || idx_theta+40>80) skipimg=1;
+            if(isopposite==false){
+              if(idx_phi-282+40-1<0 && idx_phi+40>80)skipimg=1;//phi 0 방향일때만
+            }
+            else{
+              if(idx_phi-141+40<0 || idx_phi-141+40>80)skipimg=1;//phi pi 방향일때만
+            }
             checktower=1;
             fibercheck=1;
             fibercount+=1;
@@ -855,28 +910,30 @@ TFile outfile(outname.Data(), "recreate");
             //std::sort(phis.begin(),phis.end());
             
             if(isjet==1 &&skipimg==0){// need to revise#############################
-    printf("#@! 9;");
-                if(noTheta>=0){
-                  fiber_ix.push_back(segmentation->x(fiber.fiberNum));
-                  if((segmentation->y(fiber.fiberNum))<28) phiindex=1;
-                  else phiindex=0;
-                  if((segmentation->x(fiber.fiberNum))<28) thetaindex=1;
+                if(idx_theta>=0){
+                  if((segmentation->y(fiber.fiberNum))<28) thetaindex=1;
                   else thetaindex=0;
+                  if((segmentation->x(fiber.fiberNum))<28) phiindex=1;
+                  else phiindex=0;
                 }
                 else{
-                  fiber_ix.push_back(segmentation->x(fiber.fiberNum));
-                  if((segmentation->y(fiber.fiberNum))<28) phiindex=0;
-                  else phiindex=1;
-                  if((segmentation->x(fiber.fiberNum))<28) thetaindex=0;
+                  if((segmentation->y(fiber.fiberNum))<28) thetaindex=0;
                   else thetaindex=1;
+                  if((segmentation->x(fiber.fiberNum))<28) phiindex=0;
+                  else phiindex=1;
                 }
-                thetaindex=thetaindex+(noTheta+40)*2;
-                if(noPhi>141) phiindex=phiindex+(noPhi-282+40-1)*2;
-                else phiindex=phiindex+(noPhi+40)*2;
-              if(!segmentation->IsCerenkov(fiber.fiberNum)){
-              cen_Ecorr_theta+=theta*fiber.Ecorr;
-              cen_Ecorr_phi+=phi*fiber.Ecorr;
-              }
+                thetaindex=thetaindex+(idx_theta+40)*2;
+                if(num_jet==0){
+                  if(idx_phi>141) phiindex=phiindex+(idx_phi-282+40-1)*2;
+                  else phiindex=phiindex+(idx_phi+40)*2;
+                }
+                if(num_jet==1){//반대편 그림
+                  phiindex=phiindex+(idx_phi-141+40)*2;
+                }
+                if(!segmentation->IsCerenkov(fiber.fiberNum)){
+                  cen_Ecorr_theta+=theta*fiber.Ecorr;
+                  cen_Ecorr_phi+=phi*fiber.Ecorr;
+                }
             }
             else{
               if(!segmentation->IsCerenkov(fiber.fiberNum)){
@@ -886,8 +943,8 @@ TFile outfile(outname.Data(), "recreate");
                 
                 if(diff_theta<=2 && diff_theta>=0 && diff_phi<=2 && diff_phi>=0){
                   if(diff_theta>0){
-                  phiindex = Int_t(55-segmentation->x(fiber.fiberNum));
-                  thetaindex = Int_t(55-segmentation->y(fiber.fiberNum));
+                    phiindex = Int_t(55-segmentation->x(fiber.fiberNum));
+                    thetaindex = Int_t(55-segmentation->y(fiber.fiberNum));
                   }
                   else{
                     phiindex = Int_t(segmentation->x(fiber.fiberNum));
@@ -906,6 +963,10 @@ TFile outfile(outname.Data(), "recreate");
                 else imgindex=3*phibin*etabin*diff_theta+3*phibin*thetaindex+phibin*diff_phi+phiindex;//[theta,phi]
                 //imgindex=phibin*etabin*diff_phi+phibin*thetaindex+*phibin+phiindex;//[eta,phi]
                 //imgindex=phibin*thetaindex+phiindex;//[eta,phi]
+                if(imgindex>=28224 || imgindex<0 ){
+                  printf("imgindex %d  theta %d phi %d towtheta %d towphi%d \n",imgindex,thetaindex,phiindex,idx_theta,idx_phi);
+                  continue;
+                }
                 if(segmentation->IsCerenkov(fiber.fiberNum)){
                   image_ecor_c_[imgindex]+=fiber.Ecorr;
                   E_C_img+=fiber.Ecorr;
@@ -917,15 +978,6 @@ TFile outfile(outname.Data(), "recreate");
                   center_theta_img+=fiber.Ecorr*theta;
                   center_phi_img+=fiber.Ecorr*phi;
                   image_n_s_[imgindex]+=fiber.n;
-                  if(depthmax>depth && depthmin<=depth){
-                  depthindex=Int_t(1.*(depth-depthmin)/depthsize);
-                  }
-                  if(depth==0. || depthindex!=-1){
-                    depthindex+=1;
-                    voxindex=phibin*etabin*depthindex+imgindex;//[depth,eta,phi]
-                    //voxel_ecor_s_[voxindex]+=fiber.Ecorr;
-                    //voxel_n_s_[voxindex]+=fiber.n;
-                  }
                 }
             } 
         }
@@ -949,6 +1001,7 @@ TFile outfile(outname.Data(), "recreate");
          //}
        }
      }
+      //printf("entry end..\n");
    }
     
     delete drInterface;
@@ -957,8 +1010,10 @@ TFile outfile(outname.Data(), "recreate");
   }
 
 //TFile outfile(outname.Data(), "recreate");
+  printf("writing..\n");
 outfile.Write("");
 //outfile.Write("",TObject::kOverwrite);
+  printf("closing..\n");
 outfile.Close();
 printf("--done\n");
 printf("%d files %d events filled in %s\n",readcount,int(eventtree.GetEntries()),outname.Data());
