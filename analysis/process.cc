@@ -38,6 +38,7 @@ namespace fs = std::filesystem;
 
 
 //./process ../../el2entest2_%d.root 0 1 ../../elentest2 0 0
+//./process /hdfs/user/yulee/DRsim/simdata/cleanhad/${pid}_${energy}GeV_100_${i}_%d.root 0 1 $here/pack/${pid}_${energy}GeV_${i}.root 1 $here/hadbox/${pid}_${energy}GeV_100_${i}_%d_Reco.root
 int main(int argc, char* argv[]){
   printf("begin;\n");
   TString innameform = argv[1];
