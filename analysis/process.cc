@@ -72,14 +72,8 @@ int main(int argc, char* argv[]){
     check_hep=0;
     check_dr=0;
     check_reco=0;
-    if(fs::exists(reconame.Data())){
-        box=TFile::Open(reconame.Data(),"read");
-        keys = box->GetListOfKeys();
-        if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
-        keys->Clear();
-        box->Close();
-    }
     box=TFile::Open(inname.Data(),"read");
+    keys = box->GetListOfKeys();
     keys = box->GetListOfKeys();
     if(keys->GetEntries()>1){
       for(int i=0;i<keys->GetEntries();i++){
@@ -87,18 +81,38 @@ int main(int argc, char* argv[]){
         if(strcmp(keys->At(i)->GetName(),"DRsim")==0)check_dr=1;
         if(strcmp(keys->At(i)->GetName(),"Reco")==0)check_reco=1;
       }
-      if(check_hep==0 && isjet==1) nokey=1;
-      if(check_dr==0 || check_reco==0) nokey=1;
     }
     else{
       nokey=1;
     }
-    if(nokey==1){
-      printf("nokey1 %d\n",keys->GetEntries());
-      continue;
-    }
+    if(check_hep==0 && isjet==1) nokey=1;
+    if(check_dr==0) nokey=1;
     keys->Clear();
     box->Close();
+    if(nokey==1){
+      printf("nokey hep %d dr %d reco %d %s %s;\n",check_hep,check_dr,check_reco,inname.Data(),reconame.Data());
+      continue;
+    }
+    if(fs::exists(reconame.Data())){
+        box=TFile::Open(reconame.Data(),"read");
+        keys = box->GetListOfKeys();
+        //printf("%d %s\n",keys->GetEntries(),reconame.Data());
+        if(keys->GetEntries()>0){
+          //printf("%d %s\n",keys->GetEntries(),keys->At(0)->GetName());
+          if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
+        }
+        keys->Clear();
+        box->Close();
+    }
+    else{
+      printf("nofile %s;\n",reconame.Data());
+      continue;
+    }
+    if(check_reco==0) nokey=1;
+    if(nokey==1){
+      printf("nokey hep %d dr %d reco %d %s %s;\n",check_hep,check_dr,check_reco,inname.Data(),reconame.Data());
+      continue;
+    }
     readcount+=1;
   }
   readcount=1;
@@ -115,8 +129,8 @@ int main(int argc, char* argv[]){
   float x=0.;
   float y=0.;
   float z=0.;
-  TString outname=filename+".root";
-TFile outfile(outname.Data(), "recreate");
+  TString outname=filename;
+  TFile *outfile = new TFile(outname.Data(), "recreate");
   std::vector<Int_t> tower_idx_eta;
   std::vector<Int_t> tower_idx_phi;
   std::vector<Int_t> tower_no_eta;
@@ -196,6 +210,8 @@ TFile outfile(outname.Data(), "recreate");
   std::vector<Float_t> fiber_phi;
   std::vector<Float_t> fiber_eta;
   std::vector<Bool_t> fiber_iscerenkov;
+  std::vector<Float_t> prt_E;
+  std::vector<Float_t> prt_pid;
   std::vector<Float_t> ptc_E;
   std::vector<Float_t> ptc_pt;
   std::vector<Float_t> ptc_p;
@@ -212,99 +228,101 @@ TFile outfile(outname.Data(), "recreate");
   std::vector<Int_t> ptc_pid;
 
   Int_t num_tower=0;
-  TTree eventtree("event","event info");
-  //eventtree.SetAutoSave(0);
-  eventtree.Branch("tower_eta","vector<Float_t>",&tower_eta);
-  eventtree.Branch("tower_theta","vector<Float_t>",&tower_theta);
-  eventtree.Branch("tower_phi","vector<Float_t>",&tower_phi);
-  eventtree.Branch("tower_notheta","vector<Int_t>",&tower_notheta);
-  eventtree.Branch("tower_nophi","vector<Int_t>",&tower_nophi);
-  eventtree.Branch("tower_diff_theta","vector<Int_t>",&tower_diff_theta);
-  eventtree.Branch("tower_diff_phi","vector<Int_t>",&tower_diff_phi);
-  eventtree.Branch("tower_idx_eta","vector<Int_t>",&tower_idx_eta);
-  eventtree.Branch("tower_idx_phi","vector<Int_t>",&tower_idx_phi);
-  eventtree.Branch("tower_no_eta","vector<Int_t>",&tower_no_eta);
-  eventtree.Branch("tower_no_phi","vector<Int_t>",&tower_no_phi);
-  eventtree.Branch("tower_numx","vector<Int_t>",&tower_numx);
-  eventtree.Branch("tower_numy","vector<Int_t>",&tower_numy);
-  eventtree.Branch("ptd",&ptd,"ptd/F");
-  eventtree.Branch("major_axis",&major_axis,"major_axis/F");
-  eventtree.Branch("minor_axis",&minor_axis,"minor_axis/F");
-  eventtree.Branch("center_theta_gen",&center_theta_gen,"center_theta_gen/F");
-  eventtree.Branch("center_phi_gen",&center_phi_gen,"center_phi_gen/F");
-  eventtree.Branch("center_theta_img",&center_theta_img,"center_theta_img/F");
-  eventtree.Branch("center_phi_img",&center_phi_img,"center_phi_img/F");
-  eventtree.Branch("deltheta2",&deltheta2,"deltheta2/F");
-  eventtree.Branch("delphi2",&delphi2,"delphi2/F");
-  eventtree.Branch("width_Gen",&width_Gen,"width_Gen/F");
-  eventtree.Branch("mult",&mult,"mult/I");
-  eventtree.Branch("cmult",&cmult,"cmult/I");
-  eventtree.Branch("nmult",&nmult,"nmult/I");
-  eventtree.Branch("chad_mult",&chad_mult,"chad_mult/I");
-  eventtree.Branch("nhad_mult",&nhad_mult,"nhad_mult/I");
-  eventtree.Branch("electron_mult",&electron_mult,"electron_mult/I");
-  eventtree.Branch("muon_mult",&muon_mult,"muon_mult/I");
-  eventtree.Branch("photon_mult",&photon_mult,"photon_mult/I");
-  eventtree.Branch("num_jet",&num_jet,"num_jet/I");
-  eventtree.Branch("num_entry",&num_entry,"num_entry/I");
-  eventtree.Branch("not_theta",&not_theta,"not_theta/I");
-  eventtree.Branch("not_phi",&not_phi,"not_phi/I");
-  eventtree.Branch("E_Gen",&E_Gen,"E_Gen/F");
-  eventtree.Branch("mass_Gen",&mass_Gen,"mass_Gen/F");
-  eventtree.Branch("pt_Gen",&pt_Gen,"pt_Gen/F");
-  eventtree.Branch("p_Gen",&p_Gen,"p_Gen/F");
-  eventtree.Branch("Edep",&Edep,"Edep/F");
-  eventtree.Branch("E_C",&E_C,"E_C/F");
-  eventtree.Branch("E_C_img",&E_C,"E_C_img/F");
-  eventtree.Branch("E_S",&E_S,"E_S/F");
-  eventtree.Branch("E_Scorr",&E_Scorr,"E_Scorr/F");
-  eventtree.Branch("E_Scorr_img",&E_Scorr_img,"E_Scorr_img/F");
-  eventtree.Branch("n_C",&n_C,"n_C/I");
-  eventtree.Branch("n_S",&n_S,"n_S/I");
-  eventtree.Branch("E_DR",&E_DR,"E_DR/F");
-  eventtree.Branch("E_DRcorr",&E_DRcorr,"E_DRcorr/F");
-  eventtree.Branch("Eleak_nu",&Eleak_nu,"Eleak_nu/F");
-  eventtree.Branch("Pleak",&Pleak,"Pleak/F");
-  eventtree.Branch("tower_e_s","vector<Float_t>",&tower_e_s);
-  eventtree.Branch("tower_e_c","vector<Float_t>",&tower_e_c);
-  eventtree.Branch("tower_n_s","vector<Int_t>",&tower_n_s);
-  eventtree.Branch("tower_n_c","vector<Int_t>",&tower_n_c);
-  eventtree.Branch("tower_ecor_s","vector<Float_t>",&tower_ecor_s);
-  eventtree.Branch("tower_ecor_dr","vector<Float_t>",&tower_ecor_dr);
-  eventtree.Branch("fiber_energy","vector<Float_t>",&fiber_energy);
-  eventtree.Branch("fiber_ecor","vector<Float_t>",&fiber_ecor);
-  eventtree.Branch("fiber_ecor_s","vector<Float_t>",&fiber_ecor_s);
-  eventtree.Branch("fiber_ecor_c","vector<Float_t>",&fiber_ecor_c);
-  eventtree.Branch("fiber_n","vector<Int_t>",&fiber_n);
-  eventtree.Branch("fiber_itower","vector<Int_t>",&fiber_itower);
-  eventtree.Branch("fiber_ix","vector<Int_t>",&fiber_ix);
-  eventtree.Branch("fiber_iy","vector<Int_t>",&fiber_iy);
-  eventtree.Branch("fiber_t","vector<Float_t>",&fiber_t);
-  eventtree.Branch("fiber_x","vector<Float_t>",&fiber_x);
-  eventtree.Branch("fiber_y","vector<Float_t>",&fiber_y);
-  eventtree.Branch("fiber_z","vector<Float_t>",&fiber_z);
-  eventtree.Branch("fiber_depth","vector<Float_t>",&fiber_depth);
-  eventtree.Branch("fiber_r","vector<Float_t>",&fiber_r);
-  eventtree.Branch("fiber_theta","vector<Float_t>",&fiber_theta);
-  eventtree.Branch("fiber_phi","vector<Float_t>",&fiber_phi);
-  eventtree.Branch("fiber_eta","vector<Float_t>",&fiber_eta);
-  eventtree.Branch("fiber_iscerenkov","vector<Bool_t>",&fiber_iscerenkov);
-  eventtree.Branch("cen_Ecorr_theta",&cen_Ecorr_theta,"cen_Ecorr_theta/F");
-  eventtree.Branch("cen_Ecorr_phi",&cen_Ecorr_phi,"cen_Ecorr_phi/F");
-  eventtree.Branch("ptc_E","vector<Float_t>",&ptc_E);
-  eventtree.Branch("ptc_pt","vector<Float_t>",&ptc_pt);
-  eventtree.Branch("ptc_p","vector<Float_t>",&ptc_p);
-  eventtree.Branch("ptc_px","vector<Float_t>",&ptc_px);
-  eventtree.Branch("ptc_py","vector<Float_t>",&ptc_py);
-  eventtree.Branch("ptc_pz","vector<Float_t>",&ptc_pz);
-  eventtree.Branch("ptc_vx","vector<Float_t>",&ptc_vx);
-  eventtree.Branch("ptc_vy","vector<Float_t>",&ptc_vy);
-  eventtree.Branch("ptc_vz","vector<Float_t>",&ptc_vz);
-  eventtree.Branch("ptc_vt","vector<Float_t>",&ptc_vt);
-  eventtree.Branch("ptc_theta","vector<Float_t>",&ptc_theta);
-  eventtree.Branch("ptc_phi","vector<Float_t>",&ptc_phi);
-  eventtree.Branch("ptc_eta","vector<Float_t>",&ptc_eta);
-  eventtree.Branch("ptc_pid","vector<Int_t>",&ptc_pid);
+  TTree * eventtree = new TTree("event","event info");
+  //eventtree->SetAutoSave(0);
+  eventtree->Branch("tower_eta","vector<Float_t>",&tower_eta);
+  eventtree->Branch("tower_theta","vector<Float_t>",&tower_theta);
+  eventtree->Branch("tower_phi","vector<Float_t>",&tower_phi);
+  eventtree->Branch("tower_notheta","vector<Int_t>",&tower_notheta);
+  eventtree->Branch("tower_nophi","vector<Int_t>",&tower_nophi);
+  eventtree->Branch("tower_diff_theta","vector<Int_t>",&tower_diff_theta);
+  eventtree->Branch("tower_diff_phi","vector<Int_t>",&tower_diff_phi);
+  eventtree->Branch("tower_idx_eta","vector<Int_t>",&tower_idx_eta);
+  eventtree->Branch("tower_idx_phi","vector<Int_t>",&tower_idx_phi);
+  eventtree->Branch("tower_no_eta","vector<Int_t>",&tower_no_eta);
+  eventtree->Branch("tower_no_phi","vector<Int_t>",&tower_no_phi);
+  eventtree->Branch("tower_numx","vector<Int_t>",&tower_numx);
+  eventtree->Branch("tower_numy","vector<Int_t>",&tower_numy);
+  eventtree->Branch("ptd",&ptd,"ptd/F");
+  eventtree->Branch("major_axis",&major_axis,"major_axis/F");
+  eventtree->Branch("minor_axis",&minor_axis,"minor_axis/F");
+  eventtree->Branch("center_theta_gen",&center_theta_gen,"center_theta_gen/F");
+  eventtree->Branch("center_phi_gen",&center_phi_gen,"center_phi_gen/F");
+  eventtree->Branch("center_theta_img",&center_theta_img,"center_theta_img/F");
+  eventtree->Branch("center_phi_img",&center_phi_img,"center_phi_img/F");
+  eventtree->Branch("deltheta2",&deltheta2,"deltheta2/F");
+  eventtree->Branch("delphi2",&delphi2,"delphi2/F");
+  eventtree->Branch("width_Gen",&width_Gen,"width_Gen/F");
+  eventtree->Branch("mult",&mult,"mult/I");
+  eventtree->Branch("cmult",&cmult,"cmult/I");
+  eventtree->Branch("nmult",&nmult,"nmult/I");
+  eventtree->Branch("chad_mult",&chad_mult,"chad_mult/I");
+  eventtree->Branch("nhad_mult",&nhad_mult,"nhad_mult/I");
+  eventtree->Branch("electron_mult",&electron_mult,"electron_mult/I");
+  eventtree->Branch("muon_mult",&muon_mult,"muon_mult/I");
+  eventtree->Branch("photon_mult",&photon_mult,"photon_mult/I");
+  eventtree->Branch("num_jet",&num_jet,"num_jet/I");
+  eventtree->Branch("num_entry",&num_entry,"num_entry/I");
+  eventtree->Branch("not_theta",&not_theta,"not_theta/I");
+  eventtree->Branch("not_phi",&not_phi,"not_phi/I");
+  eventtree->Branch("E_Gen",&E_Gen,"E_Gen/F");
+  eventtree->Branch("mass_Gen",&mass_Gen,"mass_Gen/F");
+  eventtree->Branch("pt_Gen",&pt_Gen,"pt_Gen/F");
+  eventtree->Branch("p_Gen",&p_Gen,"p_Gen/F");
+  eventtree->Branch("Edep",&Edep,"Edep/F");
+  eventtree->Branch("E_C",&E_C,"E_C/F");
+  eventtree->Branch("E_C_img",&E_C,"E_C_img/F");
+  eventtree->Branch("E_S",&E_S,"E_S/F");
+  eventtree->Branch("E_Scorr",&E_Scorr,"E_Scorr/F");
+  eventtree->Branch("E_Scorr_img",&E_Scorr_img,"E_Scorr_img/F");
+  eventtree->Branch("n_C",&n_C,"n_C/I");
+  eventtree->Branch("n_S",&n_S,"n_S/I");
+  eventtree->Branch("E_DR",&E_DR,"E_DR/F");
+  eventtree->Branch("E_DRcorr",&E_DRcorr,"E_DRcorr/F");
+  eventtree->Branch("Eleak_nu",&Eleak_nu,"Eleak_nu/F");
+  eventtree->Branch("Pleak",&Pleak,"Pleak/F");
+  eventtree->Branch("tower_e_s","vector<Float_t>",&tower_e_s);
+  eventtree->Branch("tower_e_c","vector<Float_t>",&tower_e_c);
+  eventtree->Branch("tower_n_s","vector<Int_t>",&tower_n_s);
+  eventtree->Branch("tower_n_c","vector<Int_t>",&tower_n_c);
+  eventtree->Branch("tower_ecor_s","vector<Float_t>",&tower_ecor_s);
+  eventtree->Branch("tower_ecor_dr","vector<Float_t>",&tower_ecor_dr);
+  eventtree->Branch("fiber_energy","vector<Float_t>",&fiber_energy);
+  eventtree->Branch("fiber_ecor","vector<Float_t>",&fiber_ecor);
+  eventtree->Branch("fiber_ecor_s","vector<Float_t>",&fiber_ecor_s);
+  eventtree->Branch("fiber_ecor_c","vector<Float_t>",&fiber_ecor_c);
+  eventtree->Branch("fiber_n","vector<Int_t>",&fiber_n);
+  eventtree->Branch("fiber_itower","vector<Int_t>",&fiber_itower);
+  eventtree->Branch("fiber_ix","vector<Int_t>",&fiber_ix);
+  eventtree->Branch("fiber_iy","vector<Int_t>",&fiber_iy);
+  eventtree->Branch("fiber_t","vector<Float_t>",&fiber_t);
+  eventtree->Branch("fiber_x","vector<Float_t>",&fiber_x);
+  eventtree->Branch("fiber_y","vector<Float_t>",&fiber_y);
+  eventtree->Branch("fiber_z","vector<Float_t>",&fiber_z);
+  eventtree->Branch("fiber_depth","vector<Float_t>",&fiber_depth);
+  eventtree->Branch("fiber_r","vector<Float_t>",&fiber_r);
+  eventtree->Branch("fiber_theta","vector<Float_t>",&fiber_theta);
+  eventtree->Branch("fiber_phi","vector<Float_t>",&fiber_phi);
+  eventtree->Branch("fiber_eta","vector<Float_t>",&fiber_eta);
+  eventtree->Branch("fiber_iscerenkov","vector<Bool_t>",&fiber_iscerenkov);
+  eventtree->Branch("cen_Ecorr_theta",&cen_Ecorr_theta,"cen_Ecorr_theta/F");
+  eventtree->Branch("cen_Ecorr_phi",&cen_Ecorr_phi,"cen_Ecorr_phi/F");
+  eventtree->Branch("prt_E","vector<Float_t>",&prt_E);
+  eventtree->Branch("prt_pid","vector<Float_t>",&prt_pid);
+  eventtree->Branch("ptc_E","vector<Float_t>",&ptc_E);
+  eventtree->Branch("ptc_pt","vector<Float_t>",&ptc_pt);
+  eventtree->Branch("ptc_p","vector<Float_t>",&ptc_p);
+  eventtree->Branch("ptc_px","vector<Float_t>",&ptc_px);
+  eventtree->Branch("ptc_py","vector<Float_t>",&ptc_py);
+  eventtree->Branch("ptc_pz","vector<Float_t>",&ptc_pz);
+  eventtree->Branch("ptc_vx","vector<Float_t>",&ptc_vx);
+  eventtree->Branch("ptc_vy","vector<Float_t>",&ptc_vy);
+  eventtree->Branch("ptc_vz","vector<Float_t>",&ptc_vz);
+  eventtree->Branch("ptc_vt","vector<Float_t>",&ptc_vt);
+  eventtree->Branch("ptc_theta","vector<Float_t>",&ptc_theta);
+  eventtree->Branch("ptc_phi","vector<Float_t>",&ptc_phi);
+  eventtree->Branch("ptc_eta","vector<Float_t>",&ptc_eta);
+  eventtree->Branch("ptc_pid","vector<Int_t>",&ptc_pid);
 
   //Float_t voxel_ecor_s_[729000];//90*90*90
   //Int_t voxel_n_s_[729000];
@@ -313,7 +331,7 @@ TFile outfile(outname.Data(), "recreate");
   Float_t image_ecor_s_[28224];//168*168
   Int_t image_n_s_[28224];
   Float_t point_2048_[8192];//90*90
-  #define BRANCH_A_(name, size, suffix) eventtree.Branch(#name, & name##_, #name"["#size"]/"#suffix);
+  #define BRANCH_A_(name, size, suffix) eventtree->Branch(#name, & name##_, #name"["#size"]/"#suffix);
   #define BRANCH_AF(name, size)  BRANCH_A_(name, size, F);
   #define BRANCH_AI(name, size)  BRANCH_A_(name, size, I);
   #define FILL_ZERO(array, size) std::fill(array, array + size, 0.0);
@@ -396,7 +414,7 @@ TFile outfile(outname.Data(), "recreate");
     reconame.ReplaceAll(".root","_Reco.root");
     if(argc>6){
       reconame.Form(reconameform.Data(),file_num);
-      printf("load reco file\n");
+      //printf("load reco file\n");
     }
     if(!fs::exists(inname.Data())){
       printf("nofile %s;\n",inname.Data());
@@ -405,13 +423,6 @@ TFile outfile(outname.Data(), "recreate");
     check_hep=0;
     check_dr=0;
     check_reco=0;
-    if(fs::exists(reconame.Data())){
-        box=TFile::Open(reconame.Data(),"read");
-        keys = box->GetListOfKeys();
-        if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
-        keys->Clear();
-        box->Close();
-    }
     box=TFile::Open(inname.Data(),"read");
     keys = box->GetListOfKeys();
     if(keys->GetEntries()>1){
@@ -420,30 +431,44 @@ TFile outfile(outname.Data(), "recreate");
         if(strcmp(keys->At(i)->GetName(),"DRsim")==0)check_dr=1;
         if(strcmp(keys->At(i)->GetName(),"Reco")==0)check_reco=1;
       }
-      if(check_hep==0 && isjet==1) nokey=1;
-      if(check_dr==0 || check_reco==0) nokey=1;
     }
     else{
       nokey=1;
     }
-    nokey=0;
-    if(nokey==1){
-      printf("nokey1 %d\n",keys->GetEntries());
-      continue;
-    }
+    if(check_hep==0 && isjet==1) nokey=1;
+    if(check_dr==0) nokey=1;
     keys->Clear();
     box->Close();
+    if(fs::exists(reconame.Data())){
+        box=TFile::Open(reconame.Data(),"read");
+        keys = box->GetListOfKeys();
+        if(keys->GetEntries()>0){
+          if(strcmp(keys->At(0)->GetName(),"Reco")==0)check_reco=1;
+        }
+        keys->Clear();
+        box->Close();
+    }
+    else{
+      printf("nofile %s;\n",reconame.Data());
+      continue;
+    }
+    if(check_reco==0) nokey=1;
+    if(nokey==1){
+      printf("nokey hep %d dr %d reco %d %s;\n",check_hep,check_dr,check_reco,inname.Data());
+      continue;
+    }
     printf("loaded %s...;\n",inname.Data());
     //mychain.Add(inname+"/DRsim");
     
+    HepMC3::ReaderRootTree hepreader(inname.Data());
     RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(std::string(inname.Data()));
     //if(!fs::exists(reconame.Data()))reconame=inname.Copy();
     //if(argc>6)reconame.Form(reconameform.Data(),file_num);
     RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>(std::string(reconame.Data()));
     //RootInterface<RecoInterface::RecoEventData>* recoInterface = new RootInterface<RecoInterface::RecoEventData>("../../tools/box/gg_70GeV_799_Reco.root");
-    printf("Loading DR interface\n");
+    //printf("Loading DR interface\n");
     drInterface->set("DRsim","DRsimEventData");
-    printf("Loading Reco interface\n");
+    //printf("Loading Reco interface\n");
     recoInterface->set("Reco","RecoEventData");
     readcount+=1;
     unsigned int entries = recoInterface->entries();
@@ -459,7 +484,7 @@ TFile outfile(outname.Data(), "recreate");
     int keyskip=0;
     while (recoInterface->numEvt() < entries) {  
       if(force_fill==1){
-        //if(count>2000)break;
+        //if(count>20)break;
         if(start==0){
           fscanf(fp1, "%d %s\n", &readidx,readpass);
         }
@@ -497,6 +522,24 @@ TFile outfile(outname.Data(), "recreate");
     
     num_entry+=1;
     fibercheck=0;
+    HepMC3::GenEvent genEvt;
+    hepreader.read_event(genEvt);
+
+    prt_pid.clear();
+    prt_E.clear();
+
+    //float Etot = 0.;
+    for (auto ptc : genEvt.particles()) {
+      int abspid = std::abs(ptc->pid());
+      int stat = ptc->status();
+      if ( stat==23){
+        prt_pid.push_back(ptc->pid());
+        prt_E.push_back(ptc->momentum().e());
+        //printf("ent %d pid %d e %g stat %d\n",entry,ptc->pid(),ptc->momentum().e(),ptc->status());
+      }
+      //if ( ptc->status() != 1 ) continue;
+      //if ( abspid == 12 || abspid == 14 || abspid == 16 ) continue;
+    }
     DRsimInterface::DRsimEventData drEvt;
     RecoInterface::RecoEventData recoEvt;
     drInterface->read(drEvt);
@@ -810,9 +853,13 @@ TFile outfile(outname.Data(), "recreate");
         int checktower=0;
         int fiberintowercount=0;
         skipimg=0;
-        if(isjet==1){
-        //if(noTheta+40<0 || noTheta+40>80) skipimg=1;
-        //if(noPhi-282+40-1<0 && noPhi+40>80) skipimg=1;//phi 0 방향일때만
+        if(isopposite==false){
+          if(noTheta+40<0 || noTheta+40>80) skipimg=1;
+          if(noPhi-282+40-1<0 && noPhi+40>80)skipimg=1;//phi 0 방향일때만
+        }
+        else{
+          if(noTheta+40+1<0 || noTheta+40+1>80) skipimg=1;
+          if(noPhi-142+40<0 || noPhi-142+40>80)skipimg=1;//phi pi 방향일때만
         }
         for (auto fiber : tower.fibers) {
             if(fiber.Ecorr==0)continue;
@@ -832,7 +879,7 @@ TFile outfile(outname.Data(), "recreate");
             }
         
             auto pos = segmentation->position(fiber.fiberNum);
-            isopposite=false;
+            //isopposite=false;
             x=float(pos.x());
             y=float(pos.y());
             z=float(pos.z());
@@ -849,7 +896,7 @@ TFile outfile(outname.Data(), "recreate");
             if(isjet==1 && num_jet==0 && abs(phi)>pi/2.)continue; // ijset 할때 phi 반대쪽에서 nophi(phi index)도 연동해야 반대편이면 nophi가 반대쪽임
             if(isjet==1 && num_jet==1){
               if(abs(phi)>pi/2.){
-                isopposite=true;
+                //isopposite=true;
                 if(phi<0){
                   phi=pi+phi;
                 }
@@ -865,14 +912,14 @@ TFile outfile(outname.Data(), "recreate");
             tower_idx_phi.push_back(idx_phi);
             tower_no_eta.push_back(noTheta);//tower 4 개로 나눠서 픽셀화할예정
             tower_no_phi.push_back(noPhi);
-            skipimg=0;
-            if(idx_theta+40<0 || idx_theta+40>80) skipimg=1;
-            if(isopposite==false){
+            /*if(isopposite==false){#not_phi,not_theta 있는경우엔 다시 사용, 원래는 서로 일치해야하나 파일이 깨지면
+              if(idx_theta+40<0 || idx_theta+40>80) skipimg=1;
               if(idx_phi-282+40-1<0 && idx_phi+40>80)skipimg=1;//phi 0 방향일때만
             }
             else{
-              if(idx_phi-141+40<0 || idx_phi-141+40>80)skipimg=1;//phi pi 방향일때만
-            }
+              if(idx_theta+40+1<0 || idx_theta+40+1>80) skipimg=1;
+              if(idx_phi-142+40<0 || idx_phi-142+40>80)skipimg=1;//phi pi 방향일때만
+            }*/
             checktower=1;
             fibercheck=1;
             fibercount+=1;
@@ -922,13 +969,14 @@ TFile outfile(outname.Data(), "recreate");
                   if((segmentation->x(fiber.fiberNum))<28) phiindex=0;
                   else phiindex=1;
                 }
-                thetaindex=thetaindex+(idx_theta+40)*2;
                 if(num_jet==0){
-                  if(idx_phi>141) phiindex=phiindex+(idx_phi-282+40-1)*2;
+                  thetaindex=thetaindex+(idx_theta+40)*2;
+                  if(idx_phi>142) phiindex=phiindex+(idx_phi-282+40-1)*2;
                   else phiindex=phiindex+(idx_phi+40)*2;
                 }
                 if(num_jet==1){//반대편 그림
-                  phiindex=phiindex+(idx_phi-141+40)*2;
+                  thetaindex=thetaindex+(idx_theta+40+1)*2;
+                  phiindex=phiindex+(idx_phi-142+40)*2;
                 }
                 if(!segmentation->IsCerenkov(fiber.fiberNum)){
                   cen_Ecorr_theta+=theta*fiber.Ecorr;
@@ -990,7 +1038,7 @@ TFile outfile(outname.Data(), "recreate");
       cen_Ecorr_phi=cen_Ecorr_phi/recoEvt.E_Scorr;
       }
        if(fibercheck==1){
-         eventtree.Fill();
+         eventtree->Fill();
        }
        else{
          //printf("no fiber\n");
@@ -1004,19 +1052,20 @@ TFile outfile(outname.Data(), "recreate");
       //printf("entry end..\n");
    }
     
-    delete drInterface;
-    delete recoInterface;
+    drInterface->close();
+    recoInterface->close();
+    hepreader.close();
 
   }
 
 //TFile outfile(outname.Data(), "recreate");
+printf("%d files %d events filled in %s\n",readcount,int(eventtree->GetEntries()),outname.Data());
   printf("writing..\n");
-outfile.Write("");
-//outfile.Write("",TObject::kOverwrite);
+outfile->Write("");
+//outfile->Write("",TObject::kOverwrite);
   printf("closing..\n");
-outfile.Close();
+outfile->Close();
 printf("--done\n");
-printf("%d files %d events filled in %s\n",readcount,int(eventtree.GetEntries()),outname.Data());
 printf("        unfilled faults %d  tower %d fiber %d\n",nofiber,outrange,repeatfiber);
 
 return 0;
