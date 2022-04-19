@@ -1,12 +1,10 @@
+#!/bin/bash
+
 source setenv-cc7-gcc8.sh
 source init_lcg.sh
 mkdir build
 cd build
 mkdir box
-cp ../DRsim/run_ele.mac DRsim/
-cp ../DRsim/run_pi.mac DRsim/
-cp ../DRsim/run_en.mac DRsim/
-cp ../DRsim/run_gps.mac DRsim/
 cmake ..
 make -j8
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMC_DIR/lib64:$FASTJET_DIR/lib:$PYTHIA_DIR/lib:$PWD/lib
@@ -24,6 +22,10 @@ cp bin/P8* Gen/
 cp bin/DRsim DRsim/
 cp bin/Reco Reco/
 cp bin/process analysis/
+cp ../DRsim/run_ele.mac DRsim/
+cp ../DRsim/run_pi.mac DRsim/
+cp ../DRsim/run_en.mac DRsim/
+cp ../DRsim/run_gps.mac DRsim/
 
 cd ..
 unset PYTHONPATH
