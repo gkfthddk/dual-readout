@@ -2,7 +2,7 @@
 /DRsim/action/useHepMC True
 
 /run/numberOfThreads 1
-/run/verbose 1
+/run/verbose 0
 /run/initialize
 
 /run/beamOn nEvt_HERE

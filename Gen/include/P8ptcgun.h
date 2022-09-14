@@ -2,12 +2,13 @@
 #define P8ptcgun_h 1
 
 #include "Pythia8/Pythia.h"
+#include "TRandom.h"
 
 using namespace Pythia8;
 
 class P8ptcgun {
 public:
-  P8ptcgun(int id, double ee, double thetaIn, double phiIn);
+  P8ptcgun(int id, double ee1, double ee2, double thetaIn, double phiIn, int seed, int mod);
   ~P8ptcgun();
 
   void fillResonance(Event& event, ParticleData& pdt, Rndm& rndm, bool atRest);
@@ -16,8 +17,14 @@ public:
 private:
   int fId;
   double fE;
+  double fE1;
+  double fE2;
   double fThetaIn;
   double fPhiIn;
+  int fSeed;
+  int fmod;
+
+  TRandom* fRandom;
 };
 
 #endif

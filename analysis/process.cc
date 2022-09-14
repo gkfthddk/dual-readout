@@ -36,26 +36,150 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+class process_class {
+    public:
+      process_class(){
+        /*
+  ifstream towerpos_file("/pad/yulee/dream/repo/0023_img/tools/towerposition.txt");
+
+  if(!towerpos_file) {
+    printf("towerposition.txt not found\n");
+    return 1;
+  }
+float temp;
+count=0;
+while (towerpos_file >> temp) {
+    dest.push_back(temp);
+    count+=1;
+  }
+towerpos_file.close();
+
+towerpos_file=open("/pad/yulee/dream/repo/0023_img/tools/towerposition.txt","r")
+towerpos=towerpos_file.readlines()
+phi_list=[]
+theta_list=[]
+for i in range(283):
+    phi_list.append(float(towerpos[1+i*92].split(" ")[2]))
+for i in range(92):
+    theta_list.append(float(towerpos[1+i].split(" ")[3]))
+    */
+        float phi_list[283]={0.0,0.0222021,0.0444041,0.0666062,0.0888083,0.11101,0.133212,
+        0.155414,0.177617,0.199819,0.222021,0.244223,0.266425,0.288627,0.310829,
+        0.333031,0.355233,0.377435,0.399637,0.421839,0.444041,0.466243,0.488445,
+        0.510648,0.53285,0.555052,0.577254,0.599456,0.621658,0.64386,0.666062,
+        0.688264,0.710466,0.732668,0.75487,0.777072,0.799274,0.821477,0.843679,
+        0.865881,0.888083,0.910285,0.932487,0.954689,0.976891,0.999093,1.0213,
+        1.0435,1.0657,1.0879,1.1101,1.13231,1.15451,1.17671,1.19891,
+        1.22111,1.24332,1.26552,1.28772,1.30992,1.33212,1.35433,1.37653,
+        1.39873,1.42093,1.44313,1.46534,1.48754,1.50974,1.53194,1.55414,
+        1.57635,1.59855,1.62075,1.64295,1.66516,1.68736,1.70956,1.73176,
+        1.75396,1.77617,1.79837,1.82057,1.84277,1.86497,1.88718,1.90938,
+        1.93158,1.95378,1.97598,1.99819,2.02039,2.04259,2.06479,2.08699,
+        2.1092,2.1314,2.1536,2.1758,2.198,2.22021,2.24241,2.26461,
+        2.28681,2.30902,2.33122,2.35342,2.37562,2.39782,2.42003,2.44223,
+        2.46443,2.48663,2.50883,2.53104,2.55324,2.57544,2.59764,2.61984,
+        2.64205,2.66425,2.68645,2.70865,2.73085,2.75306,2.77526,2.79746,
+        2.81966,2.84186,2.86407,2.88627,2.90847,2.93067,2.95288,2.97508,
+        2.99728,3.01948,3.04168,3.06389,3.08609,3.10829,3.13049,-3.13049,
+        -3.10829,-3.08609,-3.06389,-3.04168,-3.01948,-2.99728,-2.97508,-2.95288,
+        -2.93067,-2.90847,-2.88627,-2.86407,-2.84186,-2.81966,-2.79746,-2.77526,
+        -2.75306,-2.73085,-2.70865,-2.68645,-2.66425,-2.64205,-2.61984,-2.59764,
+        -2.57544,-2.55324,-2.53104,-2.50883,-2.48663,-2.46443,-2.44223,-2.42003,
+        -2.39782,-2.37562,-2.35342,-2.33122,-2.30902,-2.28681,-2.26461,-2.24241,
+        -2.22021,-2.198,-2.1758,-2.1536,-2.1314,-2.1092,-2.08699,-2.06479,
+        -2.04259,-2.02039,-1.99819,-1.97598,-1.95378,-1.93158,-1.90938,-1.88718,
+        -1.86497,-1.84277,-1.82057,-1.79837,-1.77617,-1.75396,-1.73176,-1.70956,
+        -1.68736,-1.66516,-1.64295,-1.62075,-1.59855,-1.57635,-1.55414,-1.53194,
+        -1.50974,-1.48754,-1.46534,-1.44313,-1.42093,-1.39873,-1.37653,-1.35433,
+        -1.33212,-1.30992,-1.28772,-1.26552,-1.24332,-1.22111,-1.19891,-1.17671,
+        -1.15451,-1.13231,-1.1101,-1.0879,-1.0657,-1.0435,-1.0213,-0.999093,
+        -0.976891,-0.954689,-0.932487,-0.910285,-0.888083,-0.865881,-0.843679,-0.821477,
+        -0.799274,-0.777072,-0.75487,-0.732668,-0.710466,-0.688264,-0.666062,-0.64386,
+        -0.621658,-0.599456,-0.577254,-0.555052,-0.53285,-0.510648,-0.488445,-0.466243,
+        -0.444041,-0.421839,-0.399637,-0.377435,-0.355233,-0.333031,-0.310829,-0.288627,
+        -0.266425,-0.244223,-0.222021,-0.199819,-0.177617,-0.155414,-0.133212,-0.11101,
+        -0.0888083,-0.0666062,-0.0444041,-0.0222021};
+        float theta_list[92]={1.55969,1.53748,1.51529,1.49314,1.47102,1.44896,1.42697,
+        1.40505,1.38321,1.36147,1.33984,1.31832,1.29692,1.27566,1.25454,
+        1.23357,1.21276,1.19212,1.17164,1.15135,1.13124,1.11132,1.0916,
+        1.07208,1.05278,1.03369,1.01482,0.996166,0.977741,0.959546,0.941581,
+        0.923851,0.906356,0.889096,0.872081,0.855311,0.838781,0.822496,0.806456,
+        0.790661,0.775111,0.759806,0.744746,0.729926,0.715351,0.701021,0.686931,
+        0.673081,0.659466,0.646086,0.632941,0.620026,0.607226,0.594426,0.581626,
+        0.568826,0.556026,0.543226,0.530426,0.517626,0.504826,0.492026,0.479226,
+        0.466426,0.453626,0.440826,0.428026,0.415226,0.402426,0.389626,0.376826,
+        0.364026,0.351226,0.338426,0.325626,0.312826,0.300026,0.287226,0.274426,
+        0.261626,0.248826,0.236026,0.223226,0.210426,0.197626,0.184826,0.172026,
+        0.159226,0.146426,0.133626,0.120826,0.108026};
+        for(int i =0;i<283;i++){
+          _phi_list[i]=phi_list[i];
+          if(i<92)_theta_list[i]=theta_list[i];
+        }
+        _pi=TMath::Pi();
+      }
+
+      int findphi(float phi){
+        float diff=0;
+        float mindiff=10;
+        int idx=0;
+
+        if(phi>2*_pi){
+            phi=phi-2*_pi;
+        }
+        for(int i=0;i<283;i++){
+            diff=abs(phi-_phi_list[i]);
+            if(diff<mindiff){
+                mindiff=diff;
+                idx=i;
+            }
+        }
+        return idx;
+      }
+
+      int findtheta(float theta){
+        float diff=0;
+        float mindiff=10;
+        int idx=0;
+
+        for(int i=0;i<92;i++){
+            diff=abs(theta-_theta_list[i]);
+            if(diff<mindiff){
+                mindiff=diff;
+                idx=i;
+            }
+            if(i!=91){
+                diff=abs(theta-(_pi-_theta_list[i]));
+                if(diff<mindiff){
+                  mindiff=diff;
+                  idx=-i-1;
+                }
+            }
+        }
+        return idx;
+      }
+
+    private:
+      float _phi_list[283];
+      float _theta_list[92];
+      float _pi;
+};
 
 //./process ../../el2entest2_%d.root 0 1 ../../elentest2 0 0
 //./process /hdfs/user/yulee/DRsim/simdata/cleanhad/${pid}_${energy}GeV_100_${i}_%d.root 0 1 $here/pack/${pid}_${energy}GeV_${i}.root 1 $here/hadbox/${pid}_${energy}GeV_100_${i}_%d_Reco.root
 int main(int argc, char* argv[]){
-  printf("begin;\n");
   TString innameform = argv[1];
   int num_file_begin = std::stoi(argv[2]);
   int num_file_end = std::stoi(argv[3]);
-  TString filename = argv[4];  
+  TString filename = argv[4];
   int isjet = atoi(argv[5]);
-  int force_fill = 0;
   TString reconameform;
   if(argc>6)reconameform = argv[6];
-  if(argc>7)force_fill = atoi(argv[7]);
   TString inname;
   TString reconame;
   TFile* box;
   TList* keys;
   int readcount=0;
-  printf("file will be checked %d\n",num_file_end-num_file_begin);
+  printf("process file will be checked %d\n",num_file_end-num_file_begin);
   int check_hep=0;
   int check_dr=0;
   int check_reco=0;
@@ -116,22 +240,18 @@ int main(int argc, char* argv[]){
     }
     readcount+=1;
   }
-  readcount=1;
   if(readcount==0){
     printf("no file found..\n");
     return(1);
   }
-  
-  
   readcount=0;
-  
-  
   float pi=TMath::Pi();
   float x=0.;
   float y=0.;
   float z=0.;
   TString outname=filename;
   TFile *outfile = new TFile(outname.Data(), "recreate");
+  printf("outfile %s\n",outname.Data());
   std::vector<Int_t> tower_idx_eta;
   std::vector<Int_t> tower_idx_phi;
   std::vector<Int_t> tower_no_eta;
@@ -177,6 +297,10 @@ int main(int argc, char* argv[]){
   float E_DRcorr=0.;
   float Eleak_nu=0;
   float Pleak =0;
+  float ecimg[10000]={0};
+  float esimg[10000]={0};
+  int same_ec=0;
+  int same_es=0;
   Float_t center_theta_img=0.;
   Float_t center_phi_img=0.;
   Float_t center_theta_gen=0.;
@@ -213,6 +337,11 @@ int main(int argc, char* argv[]){
   std::vector<Bool_t> fiber_iscerenkov;
   std::vector<Float_t> prt_E;
   std::vector<Float_t> prt_pid;
+  std::vector<Float_t> prt_phi;
+  std::vector<Float_t> prt_theta;
+  std::vector<Float_t> prt_px;
+  std::vector<Float_t> prt_py;
+  std::vector<Float_t> prt_pz;
   std::vector<Float_t> ptc_E;
   std::vector<Float_t> ptc_pt;
   std::vector<Float_t> ptc_p;
@@ -272,7 +401,7 @@ int main(int argc, char* argv[]){
   eventtree->Branch("p_Gen",&p_Gen,"p_Gen/F");
   eventtree->Branch("Edep",&Edep,"Edep/F");
   eventtree->Branch("E_C",&E_C,"E_C/F");
-  eventtree->Branch("E_C_img",&E_C,"E_C_img/F");
+  eventtree->Branch("E_C_img",&E_C_img,"E_C_img/F");
   eventtree->Branch("E_S",&E_S,"E_S/F");
   eventtree->Branch("E_Scorr",&E_Scorr,"E_Scorr/F");
   eventtree->Branch("E_Scorr_img",&E_Scorr_img,"E_Scorr_img/F");
@@ -309,6 +438,11 @@ int main(int argc, char* argv[]){
   eventtree->Branch("cen_Ecorr_theta",&cen_Ecorr_theta,"cen_Ecorr_theta/F");
   eventtree->Branch("cen_Ecorr_phi",&cen_Ecorr_phi,"cen_Ecorr_phi/F");
   eventtree->Branch("prt_E","vector<Float_t>",&prt_E);
+  eventtree->Branch("prt_theta","vector<Float_t>",&prt_theta);
+  eventtree->Branch("prt_phi","vector<Float_t>",&prt_phi);
+  eventtree->Branch("prt_px","vector<Float_t>",&prt_px);
+  eventtree->Branch("prt_py","vector<Float_t>",&prt_py);
+  eventtree->Branch("prt_pz","vector<Float_t>",&prt_pz);
   eventtree->Branch("prt_pid","vector<Float_t>",&prt_pid);
   eventtree->Branch("ptc_E","vector<Float_t>",&ptc_E);
   eventtree->Branch("ptc_pt","vector<Float_t>",&ptc_pt);
@@ -327,6 +461,13 @@ int main(int argc, char* argv[]){
 
   //Float_t voxel_ecor_s_[729000];//90*90*90
   //Int_t voxel_n_s_[729000];
+  Float_t point_ecor_s_[2000];//point 2000
+  Float_t point_ecor_c_[2000];//point 2000
+  Int_t point_phi_idx_[2000];//point 2000
+  Int_t point_theta_idx_[2000];//point 2000
+  Float_t point_depth_[2000];//point 2000
+  Int_t point_n_[10000];//point 2000*5 phi eta s c depth
+  Float_t image_gen_[28224];//shower 168*168, jet 162*162
   Float_t image_ecor_c_[28224];//168*168
   Int_t image_n_c_[28224];
   Float_t image_ecor_s_[28224];//168*168
@@ -339,6 +480,13 @@ int main(int argc, char* argv[]){
   #define FILL_ZEROI(array, size) std::fill(array, array + size, 0);
   //BRANCH_AF(voxel_ecor_s, 729000);
   //BRANCH_AI(voxel_n_s, 729000);
+  BRANCH_AF(point_ecor_s,2000);
+  BRANCH_AF(point_ecor_c,2000);
+  BRANCH_AI(point_phi_idx,2000);
+  BRANCH_AI(point_theta_idx,2000);
+  BRANCH_AF(point_depth,2000);
+  BRANCH_AI(point_n,8000);
+  BRANCH_AF(image_gen, 28224);
   BRANCH_AF(image_ecor_c, 28224);
   BRANCH_AI(image_n_c, 28224);//don't forget to add FILL_ZERO in loop
   BRANCH_AF(image_ecor_s, 28224);
@@ -346,17 +494,30 @@ int main(int argc, char* argv[]){
   BRANCH_AI(point_2048, 8192);//don't forget to add FILL_ZERO in loop
   //FILL_ZERO(voxel_ecor_s_,729000);
   //FILL_ZEROI(voxel_n_s_,729000);
+  FILL_ZERO(image_gen_,28224);
   FILL_ZERO(image_ecor_c_,28224);
   FILL_ZEROI(image_n_c_,28224);
   FILL_ZERO(image_ecor_s_,28224);
   FILL_ZEROI(image_n_s_,28224);
   FILL_ZEROI(point_2048_,8192);
   int depthbin=89;//22+1
-  float depthmin=34;
-  float depthmax=3060;
+  //float depthmin=34;
+  //float depthmax=3060;
+  float thetamin=0.79;
+  float thetamax=2.35;
+  float thetawidth=thetamax-thetamin;
+  float phimin=-0.88;
+  float phimax=0.88;
+  float phiwidth=phimax-phimin;
   float etabin=56;
   float phibin=56;
+  float f_threshold=0.001;
+  float f_count=0;
 
+int width=40;
+int ymax=56;
+int xmax=56;
+int pix_per_tower=56;
   float eta=0.;
   float theta=0.;
   float phi=0.;
@@ -399,14 +560,12 @@ int main(int argc, char* argv[]){
 
   auto lcdd = m_geoSvc->lcdd();
   auto allReadouts = lcdd->readouts();
-  printf("#@! 003;");
   if (allReadouts.find(m_readoutName) == allReadouts.end()) {
     throw std::runtime_error("Readout " + m_readoutName + " not found! Please check tool configuration.");
   } else {
     std::cout << "Reading EDM from the collection " << m_readoutName << std::endl;
   }
 
-  //printf("#@! 004;");
       auto segmentation = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
   
   for(int file_num=num_file_begin; file_num<num_file_end;file_num++){
@@ -460,7 +619,6 @@ int main(int argc, char* argv[]){
     }
     printf("loaded %s...;\n",inname.Data());
     //mychain.Add(inname+"/DRsim");
-    
     HepMC3::ReaderRootTree hepreader(inname.Data());
     RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(std::string(inname.Data()));
     //if(!fs::exists(reconame.Data()))reconame=inname.Copy();
@@ -478,49 +636,9 @@ int main(int argc, char* argv[]){
     int readidx=0;
     char readpass[32];
     char key[] = "pass";
-    
-    if(force_fill==1)fp1 = fopen("entries.txt", "r+");
-  
-    //fclose(fp1);
     int keyskip=0;
-    while (recoInterface->numEvt() < entries) {  
-      if(force_fill==1){
-        //if(count>20)break;
-        if(start==0){
-          fscanf(fp1, "%d %s\n", &readidx,readpass);
-        }
-        printf("entry %d  start%d count %d read %d %s     %d\n",int(recoInterface->numEvt()),start,count, readidx,readpass,int(feof(fp1)));
-        count+=1;
-        if(start==0){
-          keyskip=0;
-          if(strcmp(key,readpass)!=0){
-            //printf("no pa skip %d\n",readidx);
-            drInterface->setnumEvt(readidx+1);
-            recoInterface->setnumEvt(readidx+1);
-            keyskip=1;
-            if(int(feof(fp1))==1)fprintf(fp1, "\n");
-          }
-          if(int(feof(fp1))==1){
-              //printf("######endof file\n");
-              start=1;
-              drInterface->setnumEvt(readidx+1);
-              recoInterface->setnumEvt(readidx+1);
-              count+=1;
-
-            //fclose(fp1);
-            //fp1 = fopen("entries.txt", "a");
-          }
-          else if(keyskip==1)continue;
-        }
-        //FILE *fp = fopen("entries.txt", "a");
-        if(start==1){ 
-          printf("fprint# %d %d pa", count, int(recoInterface->numEvt()));
-          fprintf(fp1, "%d pa", count);
-
-        }
-      }
+    while (recoInterface->numEvt() < entries) {
     //if(count%int(entries/10.)==0)printf("%d%%--\n",int(100.*count/entries));
-    
     num_entry+=1;
     fibercheck=0;
     HepMC3::GenEvent genEvt;
@@ -528,15 +646,29 @@ int main(int argc, char* argv[]){
 
     prt_pid.clear();
     prt_E.clear();
+    prt_phi.clear();
+    prt_theta.clear();
+    prt_px.clear();
+    prt_py.clear();
+    prt_pz.clear();
 
     //float Etot = 0.;
-    for (auto ptc : genEvt.particles()) {
-      int abspid = std::abs(ptc->pid());
-      int stat = ptc->status();
-      if ( stat==23){
-        prt_pid.push_back(ptc->pid());
-        prt_E.push_back(ptc->momentum().e());
-        //printf("ent %d pid %d e %g stat %d\n",entry,ptc->pid(),ptc->momentum().e(),ptc->status());
+    for (auto mptc : genEvt.particles()) {
+      int abspid = std::abs(mptc->pid());
+      int stat = mptc->status();
+      if ( stat==11){
+        for (auto ptc : mptc->children()) {
+          abspid = std::abs(ptc->pid());
+          stat = ptc->status();
+          prt_pid.push_back(ptc->pid());
+          prt_E.push_back(ptc->momentum().e());
+          prt_phi.push_back(ptc->momentum().phi());
+          prt_theta.push_back(ptc->momentum().theta());
+          prt_px.push_back(ptc->momentum().px());
+          prt_py.push_back(ptc->momentum().py());
+          prt_pz.push_back(ptc->momentum().pz());
+          //printf("ent %d pid %d e %g stat %d\n",entry,ptc->pid(),ptc->momentum().e(),ptc->status());
+        }
       }
       //if ( ptc->status() != 1 ) continue;
       //if ( abspid == 12 || abspid == 14 || abspid == 16 ) continue;
@@ -545,14 +677,7 @@ int main(int argc, char* argv[]){
     RecoInterface::RecoEventData recoEvt;
     drInterface->read(drEvt);
     recoInterface->read(recoEvt);
-    if(force_fill==1){
-      if(start==1){
-      fprintf(fp1, "ss\n");
-      //printf("ss\n");
-      }
-    }
     count+=1;
-        
     E_C=recoEvt.E_C;
     E_S=recoEvt.E_S;
     E_Scorr=recoEvt.E_Scorr;
@@ -630,6 +755,13 @@ int main(int argc, char* argv[]){
       tower_diff_phi.clear();
       //FILL_ZERO(voxel_ecor_s_,729000);
       //FILL_ZEROI(voxel_n_s_,729000);
+      FILL_ZERO(point_ecor_s_,2000);
+      FILL_ZERO(point_ecor_c_,2000);
+      FILL_ZERO(point_phi_idx_,2000);
+      FILL_ZERO(point_theta_idx_,2000);
+      FILL_ZERO(point_depth_,2000);
+      FILL_ZERO(point_n_,10000);
+      FILL_ZERO(image_gen_,28224);
       FILL_ZERO(image_ecor_c_,28224);
       FILL_ZEROI(image_n_c_,28224);
       FILL_ZERO(image_ecor_s_,28224);
@@ -659,7 +791,9 @@ int main(int argc, char* argv[]){
       not_theta=0;
       not_phi=0;
       TLorentzVector ptc_sum;
-      
+      imgindex=-1;
+      phiindex=-1;
+      thetaindex=-1;
       for (auto genptc : drEvt.GenPtcs){
         ptc_pxyz->SetPxPyPzE(genptc.px,genptc.py,genptc.pz,genptc.E);
         phi=float(ptc_pxyz->Phi());
@@ -677,7 +811,14 @@ int main(int argc, char* argv[]){
           }
           else continue;
         }
-        
+        if(ptc_pxyz->Theta()>thetamin && ptc_pxyz->Theta()<thetamax){
+          if(phi>phimin && phi<phimax){
+            thetaindex=int(162*(ptc_pxyz->Theta()-thetamin)/thetawidth);
+            phiindex=int(162*(phi-phimin)/phiwidth);
+            if(isjet==1) imgindex=162*thetaindex+phiindex;
+            image_gen_[imgindex]+=genptc.E;
+          }
+        }
         center_theta_gen+=ptc_pxyz->Theta()*ptc_pxyz->Pt();
         center_phi_gen+=phi*ptc_pxyz->Pt();
         pt_Gen+=ptc_pxyz->Pt();
@@ -685,11 +826,13 @@ int main(int argc, char* argv[]){
         E_Gen+=genptc.E;
         ptc_sum=ptc_sum+*ptc_pxyz;
       }
- 
       //printf("mass %g\n",ptc_sum.M());
       mass_Gen=ptc_sum.M();
       center_theta_gen=center_theta_gen/pt_Gen;
       center_phi_gen=center_phi_gen/pt_Gen;
+      process_class process;
+      int cenphi=process.findphi(center_phi_gen+num_jet*pi);
+      int centheta=process.findtheta(center_theta_gen);
       for (auto genptc : drEvt.GenPtcs){
         ptc_pxyz->SetPxPyPzE(genptc.px,genptc.py,genptc.pz,genptc.E);
         phi=float(ptc_pxyz->Phi());
@@ -750,7 +893,7 @@ int main(int argc, char* argv[]){
             }
           }
         }
-        
+
         x = ptc_pxyz->Theta();
         y = phi;
         w2 = std::pow(ptc_pxyz->Pt(), 2);
@@ -779,7 +922,7 @@ int main(int argc, char* argv[]){
       ptd=std::sqrt(pt_square)/pt_Gen;
       num_tower = -1;
       TVector3* towercenterxyz = new TVector3();//should be energy center
-      
+
       auto towercenterpos = segmentation->towerposition(0,0);
       towercenterxyz->SetXYZ(towercenterpos.x(),towercenterpos.y(),towercenterpos.z());
       auto towercenterphi=float(towercenterxyz->Phi());
@@ -813,7 +956,6 @@ int main(int argc, char* argv[]){
         float towerphi=float(towerxyz->Phi());
         float towereta=float(towerxyz->Eta());
         float towertheta=float(towerxyz->Theta());
-        
         isopposite=false;
         if(isjet==1 && num_jet==0 && abs(towerphi)>pi/2.)continue;
         if(isjet==1 && num_jet==1){
@@ -849,7 +991,6 @@ int main(int argc, char* argv[]){
         }
         tower_diff_theta.push_back(diff_theta);
         tower_diff_phi.push_back(diff_phi);
-        
         num_tower+=1;
         int checktower=0;
         int fiberintowercount=0;
@@ -872,13 +1013,12 @@ int main(int argc, char* argv[]){
               not_phi=1;
               //printf("no phi different\n");
              }
-            idx_theta=segmentation->numEta(fiber.fiberNum);//tower 4 개로 나눠서 픽셀화할예정
-            idx_phi=segmentation->numPhi(fiber.fiberNum);
+            idx_theta=segmentation->numEta(fiber.fiberNum);//==notheta
+            idx_phi=segmentation->numPhi(fiber.fiberNum);//==nophi
         if(abs(idx_theta)>91){
               printf("fiber fibernum %d notheta %d nophi %d\n",fiber.fiberNum,idx_theta,idx_phi);
               continue;
             }
-        
             auto pos = segmentation->position(fiber.fiberNum);
             //isopposite=false;
             x=float(pos.x());
@@ -923,7 +1063,6 @@ int main(int argc, char* argv[]){
             }*/
             checktower=1;
             fibercheck=1;
-            fibercount+=1;
             depthindex=-1;
             phiindex=-1;
             thetaindex=-1;
@@ -955,9 +1094,104 @@ int main(int argc, char* argv[]){
             fiber_phi.push_back(phi);
             fiber_theta.push_back(float(fiberxyz->Theta()));
             fiber_eta.push_back(eta);
+            int fillindex=-1;
+//notheta=noTheta
+          if(noTheta<centheta-width-0 or noTheta>centheta+width-0){
+                  fillindex=-2;
+          }
+          if(cenphi>width and cenphi+width<=282){ // range between 0~282
+              if(noPhi<cenphi-width or noPhi>cenphi+width){
+                  fillindex=-2;
+              }
+          }
+          else{
+            if(cenphi<141){ // range ..0~, cenphi -141~141
+              if(noPhi-282-(cenphi)+width-1<0 and noPhi-cenphi+width>width*2){
+                  fillindex=-2;
+              }
+            }
+            else{ // range ~282.. num_jet==None, cenphi 141~282
+              if(noPhi-(cenphi)+width<0 and noPhi-cenphi+282>width-1){
+                  fillindex=-2;
+              }
+            }
+          }
+          if(fillindex!=-2){
+            if(noTheta>=0){
+                thetaindex=pix_per_tower-1-int(1.*segmentation->y(fiber.fiberNum)/ymax*pix_per_tower);
+                phiindex=pix_per_tower-1-int(1.*segmentation->x(fiber.fiberNum)/xmax*pix_per_tower);
+            }
+            else{
+                thetaindex=int(1.*segmentation->y(fiber.fiberNum)/ymax*pix_per_tower);
+                phiindex=int(1.*segmentation->x(fiber.fiberNum)/xmax*pix_per_tower);
+            }
+            /*
+            if(num_jet==0){
+                thetaindex+=(noTheta+width-centheta)*pix_per_tower;
+                if(noPhi>141){
+                    phiindex+=(noPhi-282+width-1-cenphi)*pix_per_tower;
+                }
+                else{
+                    phiindex+=(noPhi+width-cenphi)*pix_per_tower;
+                }
+            }
+            if(num_jet==1){
+                thetaindex+=(noTheta+width+1-centheta)*pix_per_tower;
+                phiindex+=(noPhi-142+width-cenphi)*pix_per_tower;
+            }
+            */
+            thetaindex+=(noTheta+width-centheta)*pix_per_tower;
+            if(cenphi>width && cenphi+width<=282){ // range between 0~282
+                phiindex+=(noPhi+width-cenphi)*pix_per_tower;
+            }
+            else{// range around including 282 and 0
+                if(cenphi<141){ // range ..0~, cenphi 0~140
+                    if(noPhi>141){ // left
+                        phiindex+=(noPhi-282+width-1-cenphi)*pix_per_tower;
+                    }
+                    else{ // right
+                        phiindex+=(noPhi+width-cenphi)*pix_per_tower;
+                    }
+                }
+                else{ // range ~282.., cenphi 141~282
+                    if(noPhi>141){ // left
+                        phiindex+=(noPhi+width-cenphi)*pix_per_tower;
+                    }
+                    else{ // right
+                        phiindex+=(noPhi+width-cenphi+282+1)*pix_per_tower;
+                    }
+                }
+            }
+            if(phiindex!=-1 && thetaindex!=-1 && fiber.Ecorr>=f_threshold){
+              for(int k=0;k<fibercount+1;k++){
+                if(k==2000)break;
+                if(point_phi_idx_[k]==phiindex && point_theta_idx_[k]==thetaindex){
+                  fillindex=k;
+                  break;
+                }
+              }
+              if(fillindex==-1){
+                  fillindex=fibercount;
+                  fibercount+=1;
+              }
+              if(fillindex<2000){
+                    if(num_entry<2&&fibercount<10)printf("%d %d\n",fillindex,fibercount);
+                    point_phi_idx_[fillindex]=phiindex;
+                    point_theta_idx_[fillindex]=thetaindex;
+                    if(segmentation->IsCerenkov(fiber.fiberNum)){
+                      point_ecor_c_[fillindex]+=fiber.Ecorr; //cerenkov energy
+										}
+                    else{
+                      point_depth_[fillindex]=(fiber.depth*fiber.Ecorr+point_ecor_s_[fillindex]*point_depth_[fillindex])/(point_ecor_s_[fillindex]+fiber.Ecorr);
+                      point_ecor_s_[fillindex]+=fiber.Ecorr; //scintilation energy
+                    }
+              }
+            }
+          }
+            phiindex=-1;
+            thetaindex=-1;
             //std::sort(phis.begin(),phis.end());
-            
-            if(isjet==1 &&skipimg==0){// need to revise#############################
+            if(isjet==1 &&skipimg==0){
                 if(idx_theta>=0){
                   if((segmentation->y(fiber.fiberNum))<28) thetaindex=1;
                   else thetaindex=0;
@@ -989,7 +1223,6 @@ int main(int argc, char* argv[]){
               cen_Ecorr_theta+=theta*fiber.Ecorr;
               cen_Ecorr_phi+=phi*fiber.Ecorr;
               }
-                
                 if(diff_theta<=2 && diff_theta>=0 && diff_phi<=2 && diff_phi>=0){
                   if(diff_theta>0){
                     phiindex = Int_t(55-segmentation->x(fiber.fiberNum));
@@ -1005,7 +1238,6 @@ int main(int argc, char* argv[]){
                   thetaindex=-1;
                 }
             }
-          
 
             if(phiindex!=-1 && thetaindex!=-1){
                 if(isjet==1) imgindex=162*thetaindex+phiindex;//[theta,phi]
@@ -1028,11 +1260,21 @@ int main(int argc, char* argv[]){
                   center_phi_img+=fiber.Ecorr*phi;
                   image_n_s_[imgindex]+=fiber.n;
                 }
-            } 
+            }
         }
 
-        
        }
+    /*for(int k = 0; k<count; k++){
+      if(ecimg[k]==E_C_img){
+        same_ec+=1;
+      }
+
+      if(esimg[k]==E_Scorr_img){
+        same_es+=1;
+      }
+    }*/
+      ecimg[count]=E_C_img;
+      esimg[count]=E_Scorr_img;
       center_theta_img=center_theta_img/E_Scorr_img;
       center_phi_img=center_phi_img/E_Scorr_img;
       cen_Ecorr_theta=cen_Ecorr_theta/recoEvt.E_Scorr;
@@ -1044,15 +1286,10 @@ int main(int argc, char* argv[]){
        else{
          //printf("no fiber\n");
          nofiber+=1;
-         //if(force_fill==1){
-         //  drInterface->setnumEvt(count+=2);
-         //  recoInterface->setnumEvt(count+=2);
-         //}
        }
      }
       //printf("entry end..\n");
    }
-    
     drInterface->close();
     recoInterface->close();
     hepreader.close();
@@ -1061,13 +1298,16 @@ int main(int argc, char* argv[]){
 
 //TFile outfile(outname.Data(), "recreate");
 printf("%d files %d events filled in %s\n",readcount,int(eventtree->GetEntries()),outname.Data());
-  printf("writing..\n");
+//printf("same_es %d same_ec %d\n",same_es,same_ec);
+  //printf("writing..\n");
 outfile->Write("");
 //outfile->Write("",TObject::kOverwrite);
-  printf("closing..\n");
+  //printf("closing..\n");
 outfile->Close();
 printf("--done\n");
-printf("        unfilled faults %d  tower %d fiber %d\n",nofiber,outrange,repeatfiber);
+if(nofiber+outrange+repeatfiber>0){
+  printf("        unfilled faults %d  tower %d fiber %d\n",nofiber,outrange,repeatfiber);
+}
 
 return 0;
 }

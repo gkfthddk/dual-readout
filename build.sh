@@ -1,14 +1,14 @@
 #!/bin/bash
 
-source setenv-cc7-gcc8.sh
-source init_lcg.sh
+source sh setenv-cc7-gcc8.sh
+source sh init_lcg.sh
 mkdir build
 cd build
 mkdir box
 cmake ..
 make -j8
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMC_DIR/lib64:$FASTJET_DIR/lib:$PYTHIA_DIR/lib:$PWD/lib
-source bin/thisddDRcalo.sh
+source sh bin/thisddDRcalo.sh
 cp rootIO/{librootIO_rdict.pcm,librootIO.rootmap} lib/
 cp -r ../Detector/DRcalo/compact bin/
 mkdir -p DRsim/bin

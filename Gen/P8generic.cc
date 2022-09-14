@@ -19,10 +19,12 @@ int main(int argc, char* argv[]) {
 
   // Check that correct number of command-line arguments
   if (argc != 4) {
+    if(argc != 5){
     cerr << " Unexpected number of command-line arguments. \n You are"
          << " expected to provide one input and one output file name. \n"
          << " Program stopped! " << endl;
     return 1;
+    }
   }
 
   // Check that the provided input name corresponds to an existing file.
