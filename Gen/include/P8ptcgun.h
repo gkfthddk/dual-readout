@@ -2,7 +2,7 @@
 #define P8ptcgun_h 1
 
 #include "Pythia8/Pythia.h"
-#include "TRandom.h"
+#include "TRandom3.h"
 
 using namespace Pythia8;
 
@@ -24,7 +24,7 @@ private:
   int fSeed;
   int fmod;
 
-  TRandom* fRandom;
+  TRandom3* fRandom;
 };
 
 #endif

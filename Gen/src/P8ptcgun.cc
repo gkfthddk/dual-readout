@@ -2,7 +2,7 @@
 
 P8ptcgun::P8ptcgun(int id, double ee1, double ee2, double thetaIn, double phiIn, int seed, int mod)
 : fId(id), fE1(ee1), fE2(ee2), fThetaIn(thetaIn), fPhiIn(phiIn), fSeed(seed), fmod(mod){
-  fRandom = new TRandom(seed);
+  fRandom = new TRandom3(seed);
 }
 
 P8ptcgun::~P8ptcgun() {}
