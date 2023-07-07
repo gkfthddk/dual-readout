@@ -27,3 +27,25 @@ datatypes :
     VectorMembers:
       - float centers  // center value of the bin
       - float contents // content of the vector within [ center-sampling/2., center+sampling/2. )
+    ExtraCode :
+      declaration: "
+  unsigned int centers_size_begin() const {return m_obj->data.centers_begin;}\n
+  unsigned int centers_size_end() const {return m_obj->data.centers_end;}\n
+    "
+
+
+  edm4hep::CalorimeterHit_Tower:
+    Description: "User class to store calorimeterhit"
+    Author : "Yunjae Lee"
+    Members:
+      - float energy               //energy of the hit in [GeV].
+      - float energyError          //error of the hit energy in [GeV].
+      - float time                 //time of the hit in [ns].
+      - short type                   //type of hit. Mapping of integer types to names via collection parameters "CalorimeterHitTypeNames" and "CalorimeterHitTypeValues".
+      - unsigned long long cellID  //detector specific (geometrical) cell id.
+      - int iy  //readout index for theta-wise.
+      - int ix  //readout index for phi-wise.
+      - int numy  //number of readout for phi-wise.
+      - int numx  //number of readout theta-wise.
+      - int noPhi //tower index for phi-wise.
+      - int noTheta //tower index for theta-wise.

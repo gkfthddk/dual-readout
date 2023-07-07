@@ -47,9 +47,14 @@ StatusCode DRcalib3D::initialize() {
 StatusCode DRcalib3D::execute() {
   const edm4hep::RawCalorimeterHitCollection* digiHits = m_digiHits.get();
   const edm4hep::CalorimeterHitCollection* hits2d = m_2dHits.get();
+  const edm4hep::CalorimeterHit_TowerCollection* towers2d = m_2dTowers.get();
   const edm4hep::SparseVectorCollection* waveforms = m_waveforms.get();
   edm4hep::CalorimeterHitCollection* caloHits = m_caloHits.createAndPut();
+  edm4hep::CalorimeterHit_TowerCollection* caloTowers = m_caloTowers.createAndPut();
   edm4hep::SparseVectorCollection* postprocTimes = m_postprocTime.createAndPut();
+    //std::ofstream outfile("output.txt");
+    //outfile <<"idx getCellID  amp  Time censize wbegin wend bin timeBin getContents"<<std::endl;//
+    //outfile << "amp idx bin con cen toaProc veloScale invVminus  energy timeBin  numerator c_light veloScaled scale towerH sipmPos.x() sipmPos.y() sipmPos.z() fiberDir.x() fiberDir.y() fiberDir.z()" << std::endl;
 
   for (unsigned int idx = 0; idx < hits2d->size(); idx++) {
     // WARNING assume same input order (sequential access)
@@ -94,7 +99,6 @@ StatusCode DRcalib3D::execute() {
 
     // create a histogram to do FFT and fill it
     std::unique_ptr<TH1D> waveHist = std::make_unique<TH1D>("waveHist","waveHist",m_nbins,m_gateStart,m_gateStart+m_gateL);
-
     for (unsigned int bin = 0; bin < waveform.centers_size(); bin++) {
       float timeBin = waveform.getCenters(bin);
       waveHist->Fill(timeBin,waveform.getContents(bin));
@@ -133,13 +137,32 @@ StatusCode DRcalib3D::execute() {
 
         auto caloHit = caloHits->create();
         caloHit.setPosition( posEdm );
-        caloHit.setCellID( hit2d.getCellID() );
+        caloHit.setCellID( cID );
         caloHit.setTime( hit2d.getTime() );
         caloHit.setType( hit2d.getType() );
         caloHit.setEnergy( energy );
+        auto caloTower = caloTowers->create();
+        caloTower.setCellID( cID );
+        caloTower.setEnergy( energy );
+        caloTower.setTime(  hit2d.getTime() );
+        caloTower.setType( hit2d.getType() );
+        caloTower.setIy( pSeg->y(cID) );
+        caloTower.setIx( pSeg->x(cID) );
+        caloTower.setNumy( pSeg->numY(cID) );
+        caloTower.setNumx( pSeg->numX(cID) );
+        caloTower.setNoPhi( numPhi );
+        caloTower.setNoTheta( numEta );
+        //outfile << amplitude <<" " << idx <<" " <<bin << " " << con << " "<< cen << " " << toaProc <<" "<< veloScaled << " "<< invVminusInvC << " " << energy<< " " << timeBin <<" " << numerator << " " << dd4hep::c_light <<" "<<veloScaled<<" "<<scale<<" "<<towerH << " "<< sipmPos.x() << " " << sipmPos.y() << " " << sipmPos.z() << " " <<fiberDir.x()<< " " <<fiberDir.y()<< " "<<fiberDir.z()<<std::endl;//
+      }
+      for (unsigned int bin = 0; bin < waveform.centers_size(); bin++) {
+        int wbegin=waveform.centers_size_begin();
+        int wend=waveform.centers_size_end();
+        float timeBin = waveform.getCenters(bin);
+        //outfile << idx << " "<< digiHit.getCellID() << " " << amplitude << " "<< digiHit.getTimeStamp() << " " << waveform.centers_size()<< " " << wbegin <<" " << wend << " " << bin <<" " <<timeBin<<" "<<waveform.getContents(bin)<<std::endl;//
       }
     }
   }
+    //outfile.close();
 
   return StatusCode::SUCCESS;
 }

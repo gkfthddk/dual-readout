@@ -29,6 +29,9 @@ namespace ddDRcalo {
 
     void construct();
 
+    int ftargetPhi=283;
+    int ftargetTheta=283;
+
   private:
     void implementTowers(xml_comp_t& x_theta, dd4hep::DDSegmentation::DRparamBase* param);
     void implementFibers(xml_comp_t& x_theta, dd4hep::Volume& towerVol, dd4hep::Trap& trap, dd4hep::DDSegmentation::DRparamBase* param);
@@ -41,6 +44,7 @@ namespace ddDRcalo {
     void getNormals(TGeoTrap* rootTrap, int numxBl2, double z, double* norm1, double* norm2, double* norm3, double* norm4);
 
     xml_det_t fX_det;
+    xml_comp_t fX_target;
     xml_comp_t fX_barrel;
     xml_comp_t fX_endcap;
     xml_comp_t fX_sipmDim;

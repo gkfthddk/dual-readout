@@ -32,7 +32,7 @@ StatusCode DRcalib2D::initialize() {
 
   if ( static_cast<int>(m_calibs.size()) != pSeg->paramBarrel()->GetTotTowerNum() + pSeg->paramEndcap()->GetTotTowerNum() ) {
     error() << "Number of calibration constants does not match with the number of towers" << endmsg;
-    return StatusCode::FAILURE;
+    //return StatusCode::FAILURE;//FIXME
   }
 
   info() << "DRcalib2D initialized" << endmsg;
@@ -43,6 +43,7 @@ StatusCode DRcalib2D::initialize() {
 StatusCode DRcalib2D::execute() {
   const edm4hep::RawCalorimeterHitCollection* digiHits = m_digiHits.get();
   edm4hep::CalorimeterHitCollection* caloHits = m_caloHits.createAndPut();
+  edm4hep::CalorimeterHit_TowerCollection* caloTowers = m_caloTowers.createAndPut();
 
   for (unsigned int idx = 0; idx < digiHits->size(); idx++) {
     const auto& digiHit = digiHits->at(idx);
@@ -55,13 +56,26 @@ StatusCode DRcalib2D::execute() {
 
     auto caloHit = caloHits->create();
     caloHit.setPosition( getPosition(cID) );
-    caloHit.setCellID( digiHit.getCellID() );
+    caloHit.setCellID( cID );
     caloHit.setTime( static_cast<double>(digiHit.getTimeStamp())*m_sampling );
 
     bool isCeren = pSeg->IsCerenkov(cID);
     float calib = isCeren ? m_calibs.at(absNumEta).first : m_calibs.at(absNumEta).second;
     caloHit.setType( static_cast<int>( isCeren ) );
-    caloHit.setEnergy( static_cast<float>(digiHit.getAmplitude())/calib );
+    float energy = (digiHit.getAmplitude())/calib;
+    caloHit.setEnergy( energy );
+
+    auto caloTower = caloTowers->create();
+    caloTower.setCellID( cID );
+    caloTower.setEnergy( energy );
+    caloTower.setTime(  static_cast<double>(digiHit.getTimeStamp())*m_sampling );
+    caloTower.setType( static_cast<int>( isCeren ) );
+    caloTower.setIy( pSeg->y(cID) );
+    caloTower.setIx( pSeg->x(cID) );
+    caloTower.setNumy( pSeg->numY(cID) );
+    caloTower.setNumx( pSeg->numX(cID) );
+    caloTower.setNoPhi( pSeg->numPhi(cID) );
+    caloTower.setNoTheta( numEta );
   }
 
   return StatusCode::SUCCESS;

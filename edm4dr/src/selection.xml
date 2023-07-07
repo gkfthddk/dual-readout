@@ -1,0 +1,85 @@
+
+<lcgdict>
+    <selection>
+
+        <class name="std::vector<edm4hep::ObjectID>" />
+        <class name="edm4hep::ObjectID">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+
+        <class name="std::vector<edm4hep::SparseVectorData>" />
+        <class name="edm4hep::SparseVectorData">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::SparseVector>" />
+        <class name="edm4hep::SparseVector">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::ConstSparseVector>" />
+        <class name="edm4hep::ConstSparseVector">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::SparseVectorCollection>" />
+        <class name="edm4hep::SparseVectorCollection">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::SparseVectorObj>" />
+        <class name="edm4hep::SparseVectorObj">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::CalorimeterHit_TowerData>" />
+        <class name="edm4hep::CalorimeterHit_TowerData">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::CalorimeterHit_Tower>" />
+        <class name="edm4hep::CalorimeterHit_Tower">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::ConstCalorimeterHit_Tower>" />
+        <class name="edm4hep::ConstCalorimeterHit_Tower">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::CalorimeterHit_TowerCollection>" />
+        <class name="edm4hep::CalorimeterHit_TowerCollection">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+        <class name="std::vector<edm4hep::CalorimeterHit_TowerObj>" />
+        <class name="edm4hep::CalorimeterHit_TowerObj">
+            <field name="m_registry" transient="true"/>
+            <field name="m_container" transient="true"/>
+        </class>
+
+
+
+    </selection>
+</lcgdict>

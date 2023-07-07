@@ -3,6 +3,7 @@
 ddDRcalo::DRconstructor::DRconstructor(xml_det_t& x_det)
 : fX_det(x_det),
   // no default initializer for xml_comp_t
+  fX_target( x_det.child( _Unicode(target) ) ),
   fX_barrel( x_det.child( _Unicode(barrel) ) ),
   fX_endcap( x_det.child( _Unicode(endcap) ) ),
   fX_sipmDim( x_det.child( _Unicode(sipmDim) ) ),
@@ -29,6 +30,8 @@ ddDRcalo::DRconstructor::DRconstructor(xml_det_t& x_det)
 void ddDRcalo::DRconstructor::construct() {
   // set vis on/off
   fVis = fDescription->visAttributes(fX_det.visStr()).showDaughters();
+  ftargetPhi=fX_target.phi();
+  ftargetTheta=fX_target.theta();
 
   implementTowers(fX_barrel, fParamBarrel);
   implementTowers(fX_endcap, fParamEndcap);
@@ -57,6 +60,12 @@ void ddDRcalo::DRconstructor::implementTowers(xml_comp_t& x_theta, dd4hep::DDSeg
     dd4hep::Volume towerVol( "tower", tower, fDescription->material(x_theta.materialStr()) );
     towerVol.setVisAttributes(*fDescription, x_theta.visStr());
 
+    if(ftargetTheta<283){
+      if(abs(fTowerNoLR-ftargetTheta)>10+int(abs(ftargetTheta)*4/50)){
+        continue;
+      }
+    }
+
     implementFibers(x_theta, towerVol, tower, param);
 
     xml_comp_t x_wafer ( fX_sipmDim.child( _Unicode(sipmWafer) ) );
@@ -79,8 +88,29 @@ void ddDRcalo::DRconstructor::implementTowers(xml_comp_t& x_theta, dd4hep::DDSeg
     }
 
     implementSipms(sipmLayerVol);
+    int left=ftargetPhi-10;
+    int right=ftargetPhi+10;
+    if(ftargetTheta<283){
+      left-=int(abs(ftargetTheta)*4/50);
+      right+=int(abs(ftargetTheta)*4/50);
+      if(abs(ftargetTheta)>51){
+        left-=int((abs(ftargetTheta)-51)*65/40);
+        right+=int((abs(ftargetTheta)-51)*65/40);
+      }
+    }
 
     for (int nPhi = 0; nPhi < x_theta.nphi(); nPhi++) {
+      if(ftargetPhi<283){
+        if(left<0){
+          if(nPhi<left+283 && right<nPhi)continue;
+        }
+        else if(right>282){
+          if(nPhi<left && right-283<nPhi)continue;
+        }
+        else{
+          if(nPhi<left || right <nPhi)continue;
+        }
+      }
       auto towerId64 = fSegmentation->setVolumeID( fTowerNoLR, nPhi );
       int towerId32 = fSegmentation->getFirst32bits(towerId64);
 

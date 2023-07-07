@@ -9,6 +9,7 @@
 #include "edm4hep/RawCalorimeterHitCollection.h"
 #include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/SparseVectorCollection.h"
+#include "edm4hep/CalorimeterHit_TowerCollection.h"
 
 #include "GridDRcalo.h"
 #include "k4Interface/IGeoSvc.h"
@@ -38,6 +39,8 @@ private:
   DataHandle<edm4hep::SparseVectorCollection> m_waveforms{"DigiWaveforms", Gaudi::DataHandle::Reader, this};
   DataHandle<edm4hep::CalorimeterHitCollection> m_2dHits{"DRcalo2dHits", Gaudi::DataHandle::Reader, this};
   DataHandle<edm4hep::CalorimeterHitCollection> m_caloHits{"DRcalo3dHits", Gaudi::DataHandle::Writer, this};
+  DataHandle<edm4hep::CalorimeterHit_TowerCollection> m_2dTowers{"DRcalo2dTowers", Gaudi::DataHandle::Reader, this};
+  DataHandle<edm4hep::CalorimeterHit_TowerCollection> m_caloTowers{"DRcalo3dTowers", Gaudi::DataHandle::Writer, this};
   DataHandle<edm4hep::SparseVectorCollection> m_postprocTime{"DRpostprocTime", Gaudi::DataHandle::Writer, this};
 
   Gaudi::Property<std::string> m_readoutName{this, "readoutName", "DRcaloSiPMreadout", "readout name of DRcalo"};
