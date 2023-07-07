@@ -1,0 +1,417 @@
+//#include "functions.h"//FIXME need for E_DR
+
+#include "edm4hep/MCParticleCollection.h"
+#include "edm4hep/SimCalorimeterHitCollection.h"
+#include "edm4hep/RawCalorimeterHitCollection.h"
+#include "edm4hep/CalorimeterHitCollection.h"
+#include "edm4hep/SparseVectorCollection.h"
+//#include "DD4hep/DD4hepUnits.h"//FIXME
+
+#include "podio/ROOTReader.h"
+#include "podio/EventStore.h"
+
+
+#include "TROOT.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+//#include "Math/GenVector/Vector3D.h"
+#include "TVector.h"
+#include "TMath.h"
+#include "Math/Vector3D.h"
+
+#include <iostream>
+#include <string>
+//#include "GridDRcalo.h"
+//#include "GeoSvc.h"
+
+using namespace ROOT::Math;
+
+float getidx(float xmin,float xbinsize,float x){
+  return int((x-xmin)/xbinsize);
+}
+void fillpoint(int phi_idx, int theta_idx, Int_t* point_phi, Int_t* point_theta,float en, Float_t* point_e_, int* count){
+
+      int fillindex=-1;
+      for(int k=0;k<*count+1;k++){
+          if(k==2000)break;
+          if(point_phi[k]==phi_idx && point_theta[k]==theta_idx){
+            fillindex=k;
+            break;
+          }
+      }
+      if(fillindex==-1){
+            fillindex= *count;
+            *count+=1;
+      }
+      if(fillindex<2000){
+              point_phi[fillindex]=phi_idx;
+              point_theta[fillindex]=theta_idx;
+              point_e_[fillindex]+=en; //cerenkov energy
+      }
+}
+
+int main(int , char* argv[]) {
+  std::cout<<"loading GeoSvc"<<std::endl;
+  //new GeoSvc({"./share/compact/DRcalo.xml"});
+  std::cout<<"loaded GeoSvc"<<std::endl;
+  //auto m_geoSvc = GeoSvc::GetInstance();
+  std::cout<<"loaded m_geoSvc"<<std::endl;
+
+
+  //ServiceHandle<IGeoSvc> m_geoSvc;//FIXME
+  //auto m_geoSvc = new IGeoSvc("./bin/compact/DRcalo.xml");
+  std::string m_readoutName = "DRcaloSiPMreadout";
+  //dd4hep::DDSegmentation::GridDRcalo* pSeg;
+  std::cout<<"loading pSeg"<<std::endl;
+  //pSeg = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
+  std::cout<<"loaded pSeg"<<std::endl;
+  //Gaudi::Property<std::string> m_readoutName{this, "readoutName", "DRcaloSiPMreadout", "readout name of DRcalo"};
+  TString filename = argv[1];
+  //int low = std::stoi(argv[2]);
+  //int high = std::stoi(argv[3]);
+  int cID =1233232;
+  //int numEta = pSeg->numEta(cID);
+  //std::cout<<"numEta "<<numEta<<std::endl;
+
+  auto pReader = std::make_unique<podio::ROOTReader>();
+  pReader->openFile(static_cast<std::string>(filename));
+
+  auto pStore = std::make_unique<podio::EventStore>();
+  pStore->setReader(pReader.get());
+
+  std::string filenameStd = static_cast<std::string>(filename);
+  std::string extension = "_reco.root";
+  auto where = filenameStd.find(extension);
+  if (where != std::string::npos) {
+    filenameStd.replace(where, extension.length(),"_img.root");
+  }
+  std::string extension2 = "box";
+  auto where2 = filenameStd.find(extension2);
+  if (where2 != std::string::npos) {
+    filenameStd.replace(where2, extension2.length(),"imgs");
+  }
+  filename = static_cast<TString>(filenameStd);
+  std::cout << "filename " << filename <<std::endl;
+  TFile *outfile = new TFile(filename.Data(), "recreate");
+
+  TTree * tree = new TTree("event","event info");
+
+  //tree->SetAutoSave(0);
+  std::vector<float> E_Ss,E_Cs;
+  std::vector<Float_t> ptc_p;
+  Int_t num_tower=0;
+
+  tree->Branch("ptc_p","vector<Float_t>",&ptc_p);
+  tree->Branch("num_tower",&num_tower,"ptd/I");
+
+  #define BRANCH_I(name) tree->Branch(#name, & name, #name"/I");
+  #define BRANCH_F(name) tree->Branch(#name, & name, #name"/F");
+  #define BRANCH_A_(name, size, suffix) tree->Branch(#name, & name, #name"["#size"]/"#suffix);
+  #define BRANCH_AF(name, size)  BRANCH_A_(name, size, F);
+  #define BRANCH_AI(name, size)  BRANCH_A_(name, size, I);
+  #define FILL_ZERO(array, size) std::fill(array, array + size, 0.0);
+  #define FILL_ZEROI(array, size) std::fill(array, array + size, 0);
+
+  int pdg=0;
+  BRANCH_I(pdg);
+  float genx=0;
+  float geny=0;
+  float genz=0;
+  float genp=0;
+  BRANCH_F(genx);
+  BRANCH_F(geny);
+  BRANCH_F(genz);
+  BRANCH_F(genp);
+
+  float genphi=0;
+  float gentheta=0;
+  BRANCH_F(genphi);
+  BRANCH_F(gentheta);
+
+  int count_reco3d_s=0;
+  int count_reco3d_c=0;
+  BRANCH_I(count_reco3d_s);
+  BRANCH_I(count_reco3d_c);
+  int count_reco2d_s=0;
+  int count_reco2d_c=0;
+  BRANCH_I(count_reco2d_s);
+  BRANCH_I(count_reco2d_c);
+  int count_sim2d_s=0;
+  int count_sim2d_c=0;
+  BRANCH_I(count_sim2d_s);
+  BRANCH_I(count_sim2d_c);
+
+  Int_t reco3d_phi_idx[2000];//reco3d 2000
+  Int_t reco3d_theta_idx[2000];//reco3d 2000
+  Float_t reco3d_e_s[2000];
+  Float_t reco3d_e_c[2000];
+  BRANCH_AI(reco3d_phi_idx,2000);
+  BRANCH_AI(reco3d_theta_idx,2000);
+  BRANCH_AF(reco3d_e_s,2000);
+  BRANCH_AF(reco3d_e_c,2000);
+  FILL_ZEROI(reco3d_phi_idx,2000);
+  FILL_ZEROI(reco3d_theta_idx,2000);
+  FILL_ZERO(reco3d_e_s,2000);
+  FILL_ZERO(reco3d_e_c,2000);
+
+  Int_t reco2d_phi_idx[2000];//reco2d 2000
+  Int_t reco2d_theta_idx[2000];//reco2d 2000
+  Float_t reco2d_e_s[2000];
+  Float_t reco2d_e_c[2000];
+  BRANCH_AI(reco2d_phi_idx,2000);
+  BRANCH_AI(reco2d_theta_idx,2000);
+  BRANCH_AF(reco2d_e_s,2000);
+  BRANCH_AF(reco2d_e_c,2000);
+  FILL_ZEROI(reco2d_phi_idx,2000);
+  FILL_ZEROI(reco2d_theta_idx,2000);
+  FILL_ZERO(reco2d_e_s,2000);
+  FILL_ZERO(reco2d_e_c,2000);
+
+  Int_t sim2d_phi_idx[2000];//sim2d 2000
+  Int_t sim2d_theta_idx[2000];//sim2d 2000
+  Float_t sim2d_e_s[2000];
+  Float_t sim2d_e_c[2000];
+  BRANCH_AI(sim2d_phi_idx,2000);
+  BRANCH_AI(sim2d_theta_idx,2000);
+  BRANCH_AF(sim2d_e_s,2000);
+  BRANCH_AF(sim2d_e_c,2000);
+  FILL_ZEROI(sim2d_phi_idx,2000);
+  FILL_ZEROI(sim2d_theta_idx,2000);
+  FILL_ZERO(sim2d_e_s,2000);
+  FILL_ZERO(sim2d_e_c,2000);
+
+
+  unsigned int entries = pReader->getEntries();
+  for (unsigned int iEvt = 0; iEvt < entries; iEvt++) {
+    //if (iEvt % 100 == 0) printf("Analyzing %dth event ...\n", iEvt);
+
+    auto& genParticles = pStore->get<edm4hep::MCParticleCollection>("GenParticles");
+    auto& edepHits = pStore->get<edm4hep::SimCalorimeterHitCollection>("SimCalorimeterHits");
+    auto& edep3dHits = pStore->get<edm4hep::SimCalorimeterHitCollection>("Sim3dCalorimeterHits");
+    auto& calo3dHits = pStore->get<edm4hep::CalorimeterHitCollection>("DRcalo3dHits");
+
+    auto& calo2dHits = pStore->get<edm4hep::CalorimeterHitCollection>("DRcalo2dHits");
+    auto& rawTimeStructs = pStore->get<edm4hep::SparseVectorCollection>("RawTimeStructs");
+    auto& rawWavlenStructs = pStore->get<edm4hep::SparseVectorCollection>("RawWavlenStructs");
+    auto& digiWaveforms = pStore->get<edm4hep::SparseVectorCollection>("DigiWaveforms");
+    auto& rawHits = pStore->get<edm4hep::RawCalorimeterHitCollection>("RawCalorimeterHits");
+    auto& digiHits = pStore->get<edm4hep::RawCalorimeterHitCollection>("DigiCalorimeterHits");
+    auto& procTimes = pStore->get<edm4hep::SparseVectorCollection>("DRpostprocTime");
+/*std::cout << "entry " <<iEvt<<std::endl;
+std::cout << "genParticles" << genParticles.size() << std::endl;
+std::cout << "edepHits" << edepHits.size() << std::endl;
+std::cout << "edep3dHits" << edep3dHits.size() << std::endl;
+std::cout << "calo3dHits" << calo3dHits.size() << std::endl;
+
+std::cout << "calo2dHits" << calo2dHits.size() << std::endl;
+std::cout << "rawTimeStructs" << rawTimeStructs.size() << std::endl;
+std::cout << "rawWavlenStructs" << rawWavlenStructs.size() << std::endl;
+std::cout << "digiWaveforms" << digiWaveforms.size() << std::endl;
+std::cout << "rawHits" << rawHits.size() << std::endl;
+std::cout << "digiHits" << digiHits.size() << std::endl;
+std::cout << "procTimes" << procTimes.size() << std::endl;*/
+    float Edep = 0.;
+    float width=0.033;
+    int res=84;
+    float phibin=width*2./res;
+    float thetabin=width*2./res;
+    genphi=0;
+    gentheta=0;
+    float en_threshold=0.0005;
+    for (unsigned int igen = 0; igen < genParticles.size(); igen++){
+      genParticles[igen].getCharge();
+      genParticles[igen].getTime();
+      genParticles[igen].getMass();
+      auto vertex = genParticles[igen].getVertex();
+      auto momentum = genParticles[igen].getMomentum();
+      Polar3DVector v1;
+      Polar3DVector v2;
+      v1.SetXYZ(momentum.x,momentum.y,momentum.z);
+      v2.SetXYZ(vertex.x,vertex.y,vertex.z);
+      v1.SetR(1800);
+      auto shift=v1+v2;
+      genphi=shift.Phi();
+      gentheta=shift.Theta();
+      pdg=genParticles[igen].getPDG();
+      genx=momentum.x;
+      geny=momentum.y;
+      genz=momentum.z;
+      genp=sqrt(pow(genx,2)+pow(geny,2)+pow(genz,2));
+    }
+    for (unsigned int iEdep = 0; iEdep < edepHits.size(); iEdep++){
+    }
+    for (unsigned int iEdep = 0; iEdep < edep3dHits.size(); iEdep++){
+      /*float en = caloHit.getEnergy();
+      int nhits = rawHit.getAmplitude();
+      (type==0) ? en_S += en : en_C += en;
+      edep3dHits[iEdep].getEnergy
+      edep3dHits[iEdep].getPosition
+      edep3dHits[iEdep].getCellID
+      edep3dHits[iEdep].getType*/
+    }
+
+    FILL_ZEROI(reco3d_phi_idx,2000);
+    FILL_ZEROI(reco3d_theta_idx,2000);
+    FILL_ZERO(reco3d_e_s,2000);
+    FILL_ZERO(reco3d_e_c,2000);
+
+    FILL_ZEROI(reco2d_phi_idx,2000);
+    FILL_ZEROI(reco2d_theta_idx,2000);
+    FILL_ZERO(reco2d_e_s,2000);
+    FILL_ZERO(reco2d_e_c,2000);
+
+    FILL_ZEROI(sim2d_phi_idx,2000);
+    FILL_ZEROI(sim2d_theta_idx,2000);
+    FILL_ZERO(sim2d_e_s,2000);
+    FILL_ZERO(sim2d_e_c,2000);
+
+    float thetamin=gentheta-width;
+    float phimin=genphi-width;
+    count_reco3d_s=0;
+    count_reco3d_c=0;
+    int fibercount=0;
+    float enS=0.;
+    float enC=0.;
+    for (unsigned int idx = 0; idx < calo3dHits.size(); idx++) {
+      const auto& caloHit = calo3dHits.at(idx);
+      float en = caloHit.getEnergy();
+      if(en > en_threshold){
+        auto position = caloHit.getPosition();
+        Polar3DVector v1;
+        v1.SetXYZ(position.x,position.y,position.z);
+        int phi_idx = getidx(phimin, phibin,v1.Phi());
+        int theta_idx = getidx(thetamin, thetabin,v1.Theta());
+        if(caloHit.getType()==0) fillpoint(phi_idx, theta_idx, reco3d_phi_idx, reco3d_theta_idx, en, reco3d_e_s, &count_reco3d_s);
+        else fillpoint(phi_idx, theta_idx, reco3d_phi_idx, reco3d_theta_idx, en, reco3d_e_c, &count_reco3d_c);
+      /*int fillindex=-1;
+        if(caloHit.getType()==0) fibercount=count_reco3d_s;
+        else fibercount=count_reco3d_c;
+
+        for(int k=0;k<fibercount+1;k++){
+          if(k==2000)break;
+          if(point_phi_idx[k]==phi_idx && point_theta_idx[k]==theta_idx){
+            fillindex=k;
+            break;
+          }
+        }
+        if(fillindex==-1){
+            fillindex=fibercount;
+            fibercount+=1;
+        }
+        if(fillindex<2000){
+              point_phi_idx[fillindex]=phi_idx;
+              point_theta_idx[fillindex]=theta_idx;
+              if(caloHit.getType()==0){
+                point_e_s[fillindex]+=en; //scintilation energy
+                count_reco3d_s=fibercount;
+              }
+              else{
+                point_e_c[fillindex]+=en; //cerenkov energy
+                count_reco3d_c=fibercount;
+              }
+        }*/
+      }
+      if(caloHit.getType()==0)enS+=en;
+      else enC+=en;
+    }
+    float enS_cut=0.;
+    float enC_cut=0.;
+    for(int i=0;i<2000;i++){
+      enS_cut+=reco3d_e_s[i];
+      enC_cut+=reco3d_e_c[i];
+    }
+
+    count_reco2d_s=0;
+    count_reco2d_c=0;
+    for (unsigned int idx = 0; idx < calo2dHits.size(); idx++) {
+      const auto& caloHit = calo2dHits.at(idx);
+      float en = caloHit.getEnergy();
+      if(en > en_threshold){
+        auto position = caloHit.getPosition();
+        Polar3DVector v1;
+        v1.SetXYZ(position.x,position.y,position.z);
+        int phi_idx = getidx(phimin, phibin,v1.Phi());
+        int theta_idx = getidx(thetamin, thetabin,v1.Theta());
+        if(caloHit.getType()==0) fillpoint(phi_idx, theta_idx, reco2d_phi_idx, reco2d_theta_idx, en, reco2d_e_s, &count_reco2d_s);
+        else fillpoint(phi_idx, theta_idx, reco2d_phi_idx, reco2d_theta_idx, en, reco2d_e_c, &count_reco2d_c);
+      }
+    }
+    count_sim2d_s=0;
+    count_sim2d_c=0;
+    for (unsigned int idx = 0; idx < edepHits.size(); idx++) {
+      const auto& caloHit = edepHits.at(idx);
+      float en = caloHit.getEnergy();
+      if(en > en_threshold){
+        auto position = caloHit.getPosition();
+        Polar3DVector v1;
+        v1.SetXYZ(position.x,position.y,position.z);
+        int phi_idx = getidx(phimin, phibin,v1.Phi());
+        int theta_idx = getidx(thetamin, thetabin,v1.Theta());
+        fillpoint(phi_idx, theta_idx, sim2d_phi_idx, sim2d_theta_idx, en, sim2d_e_s, &count_sim2d_s);
+        //if(caloHit.getType()==0) fillpoint(phi_idx, theta_idx, sim2d_phi_idx, sim2d_theta_idx, en, sim2d_e_s, &count_sim2d_s);FIXME
+        //else fillpoint(phi_idx, theta_idx, sim2d_phi_idx, sim2d_theta_idx, en, sim2d_e_c, &count_sim2d_c);
+      }
+    }
+    //printf("fiber %d %d\n",count_reco3d_s,count_reco3d_c);
+    //std::cout<<"enS "<<enS_cut<< " "<<enS<<std::endl;
+    //std::cout<<"enC "<<enC_cut<< " "<<enC<<std::endl;
+    tree->Fill();
+
+    /*
+    for (unsigned int idx = 0; idx < calo2dHits.size(); idx++) {
+      const auto& caloHit = calo2dHits.at(idx);
+      const auto& timeStruct = rawTimeStructs.at(idx);
+      const auto& wavlenStruct = rawWavlenStructs.at(idx);
+      const auto& waveform = digiWaveforms.at(idx);
+      const auto& rawHit = rawHits.at(idx);
+      const auto& digiHit = digiHits.at(idx);
+      const auto& procTime = procTimes.at(idx);
+      caloHit.getPosition();
+      caloHit.getTime();
+      int type = caloHit.getType();
+      float en = caloHit.getEnergy();
+      int nhits = rawHit.getAmplitude();
+      
+      (type==0) ? en_S += en : en_C += en;
+
+      tNhit->Fill(nhits);
+      tToa->Fill(caloHit.getTime());
+
+      if ( digiHit.getAmplitude() > 0 )
+        tInt->Fill(static_cast<double>(digiHit.getAmplitude()));
+
+      for (unsigned int bin = 0; bin < timeStruct.centers_size(); bin++) {
+        float timeBin = timeStruct.getCenters(bin);
+        tT->Fill(timeBin,timeStruct.getContents(bin));
+      }
+
+      for (unsigned int bin = 0; bin < wavlenStruct.centers_size(); bin++) {
+        float wavlenBin = wavlenStruct.getCenters(bin);
+        tWav->Fill(wavlenBin,wavlenStruct.getContents(bin));
+      }
+
+      for (unsigned int bin = 0; bin < waveform.centers_size(); bin++) {
+        float timeBin = waveform.getCenters(bin);
+        tD->Fill(timeBin,waveform.getContents(bin));
+      }
+
+      for (unsigned int bin = 0; bin < procTime.centers_size(); bin++) {
+        float timeBin = procTime.getCenters(bin);
+        tProc->Fill(timeBin,procTime.getContents(bin));
+      }
+    }
+
+    E_Ss.push_back(en_S);
+    E_Cs.push_back(en_C);*/
+
+    pStore->clear();
+    pReader->endOfEvent();
+  } // event loop
+
+
+
+outfile->Write("");
+  //printf("closing..\n");
+outfile->Close();
+}
