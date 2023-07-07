@@ -1,9 +1,14 @@
 # dual-readout
 Repository for GEANT4 simulation &amp; analysis of the dual-readout calorimeter.
 
+    git clone git@github.com:gkfthddk/dual-readout.git
+    cd dual-readout
+    git branch -r
+    git checkout -t origin/0022
+
 ## How-to
 ### Compile
-After fetching the repository, do
+After fetching the repository, do (modify setuos.sh or use setenv*.sh at your system)
 
 ```sh
 source init_lcg.sh # init_hsf.sh for /cvmfs/sw.hsf.org/key4hep
