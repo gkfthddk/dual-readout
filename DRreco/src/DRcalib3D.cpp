@@ -13,7 +13,7 @@
 
 DECLARE_COMPONENT(DRcalib3D)
 
-DRcalib3D::DRcalib3D(const std::string& aName, ISvcLocator* aSvcLoc) : GaudiAlgorithm(aName, aSvcLoc), m_geoSvc("GeoSvc", aName) {
+DRcalib3D::DRcalib3D(const std::string& aName, ISvcLocator* aSvcLoc) : Gaudi::Algorithm(aName, aSvcLoc), m_geoSvc("GeoSvc", aName) {
   declareProperty("GeoSvc", m_geoSvc);
 
   pSeg = nullptr;
@@ -21,7 +21,7 @@ DRcalib3D::DRcalib3D(const std::string& aName, ISvcLocator* aSvcLoc) : GaudiAlgo
 }
 
 StatusCode DRcalib3D::initialize() {
-  StatusCode sc = GaudiAlgorithm::initialize();
+  StatusCode sc = Gaudi::Algorithm::initialize();
 
   if (sc.isFailure()) return sc;
 
@@ -30,7 +30,7 @@ StatusCode DRcalib3D::initialize() {
     return StatusCode::FAILURE;
   }
 
-  pSeg = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->lcdd()->readout(m_readoutName).segmentation().segmentation());
+  pSeg = dynamic_cast<dd4hep::DDSegmentation::GridDRcalo*>(m_geoSvc->getDetector()->readout(m_readoutName).segmentation().segmentation());
 
   auto veloFile = std::make_unique<TFile>(m_veloFile.value().c_str(),"READ");
   m_veloC.reset( static_cast<TH1D*>(veloFile->Get(m_cherenProf.value().c_str())) );
@@ -44,7 +44,7 @@ StatusCode DRcalib3D::initialize() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode DRcalib3D::execute() {
+StatusCode DRcalib3D::execute(const EventContext&) const {
   const edm4hep::CalorimeterHitCollection* digiHits = m_digiHits.get();
   const edm4hep::CalorimeterHitCollection* hits2d = m_2dHits.get();
   const edm4hep::TimeSeriesCollection* waveforms = m_waveforms.get();
@@ -109,7 +109,7 @@ StatusCode DRcalib3D::execute() {
     double scale = pSeg->IsCerenkov(cID) ? m_cherenScale.value() : m_scintScale.value();
 
     // create a histogram to do FFT and fill it
-    std::unique_ptr<TH1D> waveHist = std::make_unique<TH1D>("waveHist","waveHist",m_nbins,m_gateStart,m_gateStart+m_gateL);
+    std::unique_ptr<TH1D> waveHist = std::make_unique<TH1D>("waveHist","waveHist",m_nbins,m_gateStart,m_gateStart.value()+m_gateL.value());
     float sampling = waveform.getInterval();
     float startTime = waveform.getTime();
 
@@ -162,9 +162,9 @@ StatusCode DRcalib3D::execute() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode DRcalib3D::finalize() { return GaudiAlgorithm::finalize(); }
+StatusCode DRcalib3D::finalize() { return Gaudi::Algorithm::finalize(); }
 
-TH1* DRcalib3D::processFFT(TH1* waveHist) {
+TH1* DRcalib3D::processFFT(TH1* waveHist) const {
   int firstBin = waveHist->FindFirstBinAbove( m_zero.value()*waveHist->GetMaximum() );
   int lastBin = firstBin;
 
